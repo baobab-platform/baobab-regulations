@@ -12,7 +12,7 @@ not modelled as a JurisdictionRoleKind.
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from baobab_regulations.domain.shared.ids import HSCode, JurisdictionCode, RegimeCode
 
@@ -35,14 +35,31 @@ class JurisdictionRole(BaseModel):
 
 
 class PlatformContextRef(BaseModel):
-    """Opaque references into Control Plane — never redefined here."""
+    """Opaque references into Control Plane — never redefined here.
 
-    tenant_id: str
+    Prefer redeeming ``context_id`` from Control Plane in production. Inline IDs
+    are allowed for scaffold and offline tests (ADR-REG-0026).
+    """
+
+    tenant_id: str | None = None
     organisation_id: str | None = None
     legal_entity_id: str | None = None
     market_id: str | None = None
     trade_lane_id: str | None = None
     capability_grant_ids: list[str] = Field(default_factory=list)
+    context_id: str | None = Field(
+        default=None,
+        description="Opaque Control Plane platform-context id for redemption.",
+    )
+
+    @model_validator(mode="after")
+    def require_tenant_or_context_id(self) -> "PlatformContextRef":
+        has_tenant = bool(self.tenant_id and str(self.tenant_id).strip())
+        has_context = bool(self.context_id and str(self.context_id).strip())
+        if not has_tenant and not has_context:
+            msg = "platform context requires tenant_id or context_id"
+            raise ValueError(msg)
+        return self
 
 
 class RegulatoryContext(BaseModel):
