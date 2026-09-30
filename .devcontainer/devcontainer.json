@@ -1,0 +1,22 @@
+{
+  "name": "baobab-regulations",
+  "image": "ghcr.io/baobab-platform/baobab-dev:1.4.4",
+  "remoteUser": "vscode",
+  "workspaceFolder": "/workspaces/baobab-regulations",
+  "postCreateCommand": "uv sync --all-groups || true",
+  "forwardPorts": [8080, 5432, 8181],
+  "portsAttributes": {
+    "8080": { "label": "Regulations API" },
+    "5432": { "label": "PostgreSQL" },
+    "8181": { "label": "OPA" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  }
+}

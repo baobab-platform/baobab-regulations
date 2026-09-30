@@ -1,0 +1,92 @@
+[project]
+name = "baobab-regulations"
+version = "0.1.0"
+description = "Baobab Regulations — headless, jurisdiction-aware regulatory intelligence and deterministic regulatory decision engine for the Baobab Platform."
+readme = "README.md"
+requires-python = ">=3.14"
+license = "Apache-2.0"
+authors = [{ name = "Nabhold" }]
+dependencies = [
+    "asyncpg>=0.30,<1",
+    "fastapi>=0.115,<1",
+    "jsonschema>=4.23,<5",
+    "opentelemetry-api>=1.27,<2",
+    "opentelemetry-sdk>=1.27,<2",
+    "pydantic>=2.9,<3",
+    "pydantic-settings>=2.6,<3",
+    "python-dotenv>=1.0,<2",
+    "uvicorn>=0.32,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/baobab_regulations"]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28,<1",
+    "mypy>=1.13,<2",
+    "pytest>=9.0.3,<10",
+    "pytest-asyncio>=1.0,<2",
+    "referencing>=0.35,<1",
+    "ruff>=0.7,<1",
+]
+security = [
+    "bandit>=1.7,<2",
+    "pip-audit>=2.7,<3",
+]
+# Knowledge-plane optional stack (Haystack/Qdrant/Docling) is intentionally
+# not a core runtime dependency until the knowledge plane is activated.
+# See ADR-REG-0005 / ADR-REG-0021 and docs/operations/scaffold-status.md.
+
+[tool.ruff]
+line-length = 110
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TID"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["TID252"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["baobab_regulations"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Path", "fastapi.Body"]
+
+[tool.mypy]
+python_version = "3.14"
+packages = ["baobab_regulations"]
+mypy_path = "src"
+strict = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["asyncpg", "asyncpg.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "opentelemetry.exporter.otlp.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "architecture: enforces module dependency boundaries",
+    "contract: validates payloads against shared contract schemas",
+    "live_opa: requires a running OPA instance (opt-in)",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
