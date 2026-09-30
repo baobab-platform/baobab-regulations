@@ -29,8 +29,10 @@ Upstream already contains:
 - engine-template remnants under `.github/` (Foundation workflows may still be `.example`)
 
 This scaffold **adds** the Python execution-plane skeleton, offline reference
-evaluator for the UG→ZA coffee profile, tests, compose stack, and activated
-`.baobab` / `.devcontainer` files. It does **not** replace the ADR corpus.
+evaluator (under `infrastructure.evaluation`, not `opa`) for the UG→ZA coffee
+profile, tests, compose stack, and activated `.baobab` / `.devcontainer` files
+aligned to the platform `repository.yaml` contract. It does **not** replace
+the ADR corpus. Regimes (e.g. AfCFTA) are modelled separately from jurisdictions.
 
 ## Verify locally
 

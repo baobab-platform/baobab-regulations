@@ -12,7 +12,7 @@ from baobab_regulations.domain.context.models import (
 )
 from baobab_regulations.domain.shared.enums import DecisionOutcome
 from baobab_regulations.domain.shared.ids import HSCode, JurisdictionCode, RegimeCode
-from baobab_regulations.infrastructure.opa.reference_evaluator import ReferenceEvaluator
+from baobab_regulations.infrastructure.evaluation.reference import ReferenceEvaluator
 from baobab_regulations.tenancy.context import TenantContextError
 
 
@@ -28,12 +28,9 @@ def _ctx(**overrides: object) -> RegulatoryContext:
                 role=JurisdictionRoleKind.IMPORT_JURISDICTION,
                 jurisdiction=JurisdictionCode("ZA"),
             ),
-            JurisdictionRole(
-                role=JurisdictionRoleKind.PREFERENTIAL_REGIME,
-                jurisdiction=JurisdictionCode("AfCFTA"),
-                regime=RegimeCode("AfCFTA"),
-            ),
         ],
+        # AfCFTA is a regulatory regime, not a jurisdiction (ADR-REG-0017 / 0026).
+        regulatory_regimes=[RegimeCode("AfCFTA")],
         hs_classification=HSCode("0901.11.10"),
         origin_claimed_country=JurisdictionCode("UG"),
         origin_regime=RegimeCode("AfCFTA"),

@@ -13,7 +13,7 @@ from baobab_regulations.domain.context.models import (
     RegulatoryContext,
 )
 from baobab_regulations.domain.shared.ids import HSCode, JurisdictionCode, RegimeCode
-from baobab_regulations.infrastructure.opa.reference_evaluator import ReferenceEvaluator
+from baobab_regulations.infrastructure.evaluation.reference import ReferenceEvaluator
 from baobab_regulations.infrastructure.persistence.memory import InMemoryDecisionRepository
 
 
@@ -31,6 +31,7 @@ async def main() -> None:
                 jurisdiction=JurisdictionCode("ZA"),
             ),
         ],
+        regulatory_regimes=[RegimeCode("AfCFTA")],
         hs_classification=HSCode("0901.11.10"),
         origin_claimed_country=JurisdictionCode("UG"),
         origin_regime=RegimeCode("AfCFTA"),
