@@ -1,5 +1,11 @@
 """Persistence adapters."""
 
-from baobab_regulations.infrastructure.persistence.memory import InMemoryDecisionRepository
+from baobab_regulations.infrastructure.persistence.memory import (
+    InMemoryDecisionRepository,
+    InMemoryRuleSetRepository,
+)
 
-__all__ = ["InMemoryDecisionRepository"]
+__all__ = [
+    "InMemoryDecisionRepository",
+    "InMemoryRuleSetRepository",
+]

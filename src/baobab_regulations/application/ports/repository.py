@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Protocol
 
 from baobab_regulations.domain.decisions.models import RegulatoryDecision
+from baobab_regulations.domain.rules.models import RuleSetRecord
 from baobab_regulations.domain.shared.ids import RegulatoryId
 
 
@@ -22,3 +23,7 @@ class RuleSetRepositoryPort(Protocol):
         corridor_profile: str,
         knowledge_time: datetime,
     ) -> str | None: ...
+
+    async def get(self, rule_set_id: str) -> RuleSetRecord | None: ...
+
+    async def save(self, record: RuleSetRecord) -> None: ...

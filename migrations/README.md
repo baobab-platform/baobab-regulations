@@ -3,12 +3,26 @@
 PostgreSQL is the planned canonical store for regulatory state, temporal data,
 governance, and audit (ADR-REG-0006, ADR-REG-0015).
 
-No production migrations are activated in the scaffold. The first candidate
-tables will cover:
+## Applied (REG-2)
 
-- `regulatory_decisions` (immutable decision records + replay keys)
-- outbox for regulatory events
-- rule-set / pack activation metadata
+| File | Purpose |
+|------|---------|
+| `000001_regulatory_decisions.sql` | Append-only `regulatory_decisions` + `regulatory_rule_sets` metadata |
 
-Until then, the offline `InMemoryDecisionRepository` is used by tests and the
-reference example.
+Apply against the compose database:
+
+```bash
+docker compose up -d postgres
+psql "postgres://baobab:baobab@localhost:5432/baobab_regulations" \
+  -f migrations/000001_regulatory_decisions.sql
+```
+
+Unit tests continue to use `InMemoryDecisionRepository` /
+`InMemoryRuleSetRepository`. `PostgresDecisionRepository` /
+`PostgresRuleSetRepository` are the production skeleton (asyncpg pool).
+
+## Not yet
+
+- Outbox for regulatory events
+- Instrument / provision / source artefact tables
+- Pack activation metadata
