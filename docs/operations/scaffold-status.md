@@ -10,22 +10,24 @@
 |------|--------|
 | Python package `baobab_regulations` (src layout, uv/hatch) | Done |
 | Domain: shared enums, bitemporal interval, context, decision models | Done |
+| Domain: instruments, provisions, regimes, rule-set records (REG-2) | Done |
 | Application: evaluator + repository ports, `EvaluationService` | Done |
-| Infrastructure: in-memory decision repo, offline `ReferenceEvaluator` under `infrastructure.evaluation` | Done |
+| Infrastructure: in-memory + Postgres decision/rule-set repos | Done |
 | Tenancy: fail-closed `require_tenant_context` | Done |
 | API: FastAPI `/healthz`, `/readyz` | Done |
-| Tests: unit (reference evaluator), architecture boundary, API health | Done |
+| Migrations: `000001_regulatory_decisions.sql` | Done |
+| Tests: unit (reference evaluator, platform context, aggregates) | Done |
 | Example: UG→ZA coffee reference evaluation (ADR-REG-0027) | Done |
 | Local compose: PostgreSQL 17 + OPA | Done |
-| `.baobab` + `.devcontainer` activation files (platform `repository.yaml` shape) | Done |
+| `.baobab` + capability-provider planned keys | Done |
 | ADR programme ADR-REG-0001 … 0030 | Already on upstream `main` |
 
 ## Explicitly not activated yet
 
-- PostgreSQL migrations for canonical regulatory aggregates
-- Live OPA/Rego compilation from BRIR (`infrastructure.opa` reserved, empty)
+- Live OPA/Rego compilation from BRIR
 - Knowledge plane (Haystack, Docling, Qdrant, LangGraph)
-- Source ingestion adapters and rights policy
+- Source ingestion adapters and rights policy (REG-3)
+- BRIR v0 + applicability (REG-4)
 - Jurisdiction packs / marketplace (ADR-REG-0029)
 - Production evaluation HTTP routes and authn/z
 - Application-specific Foundation CI workflows beyond template leftovers
@@ -40,21 +42,8 @@
 5. **Domain must not import infrastructure** — enforced by architecture tests.
 6. **Jurisdiction ≠ regime** — regimes (e.g. AfCFTA) are `RegimeCode` / `regulatory_regimes`, never `JurisdictionRoleKind` or `JurisdictionCode` (ADR-REG-0017, ADR-REG-0026).
 
-## Audit fixes applied (pre-merge)
-
-| Issue | Resolution |
-|-------|------------|
-| `.baobab/repository.yaml` non-platform dialect | Replaced with `schema_version: 1` shape matching baobab-cp / baobab-pulse / shared |
-| `JurisdictionRoleKind.PREFERENTIAL_REGIME` + `JurisdictionCode("AfCFTA")` | Removed; AfCFTA modelled as `RegimeCode` |
-| Ruff I import order | Alphabetical isort order |
-| `ReferenceEvaluator` under `infrastructure.opa` | Moved to `infrastructure.evaluation` |
-| `RuleSetRepositoryPort.knowledge_time: str` | Typed as `datetime` |
-| CONTRIBUTING nabhold paths | Updated to baobab-platform / `.baobab` |
-
 ## Next recommended gates
 
-Follow **[implementation-plan.md](./implementation-plan.md)** / `artifacts/gate-reg-implementation-plan.md`.
+Follow **[implementation-plan.md](./implementation-plan.md)**.
 
-**REG-1 implemented on branch:** capability-provider planned keys, platform context redemption, request-scope deps, draft evaluation audit events.
-
-Next: **REG-2** (aggregates + first migration). Do not start live OPA, ingestion, AI, packs, or commercial work before REG-5 coffee goldens are green against BRIR.
+**REG-1 + REG-2 done on branch.** Next: **REG-3** (source registry) or **REG-4** (BRIR v0). Do not start live OPA, ingestion, AI, packs, or commercial work before REG-5 coffee goldens are green against BRIR.
