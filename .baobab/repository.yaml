@@ -1,32 +1,21 @@
-schema:
-  name: "baobab-platform-repository-contract"
-  version: "1.0"
-
+schema_version: 1
 repository:
-  name: "baobab-regulations"
-  organisation: "baobab-platform"
-  visibility: "public"
-  classification: "engine"
-  primary_language: "python"
-  license: "Apache-2.0"
-
-capability:
-  # Planned capability domains; not yet catalogued in Control Plane.
-  planned:
-    - "regulations.context.resolve"
-    - "regulations.decision.evaluate"
-    - "regulations.change.subscribe"
-    - "regulations.pack.compose"
-
-dependencies:
-  control_plane: "baobab-cp"
-  identity: "baobab-iam"
-  shared_contracts: "baobab-platform/shared"
-  related_engines:
-    - "baobab-trade"
-    - "baobab-pulse"
-    - "baobab-erp"
-
-notes:
-  - "Regulatory truth is independent of commercial entitlement (ADR-REG-0030)."
-  - "Initial corridor profile: Uganda → South Africa, coffee and vanilla (ADR-REG-0027)."
+  lifecycle: experimental
+capabilities:
+  - python
+  - container
+  - engine
+environment:
+  baobab_dev:
+    required: true
+    profile: full
+package_managers:
+  python: uv
+artifacts:
+  container:
+    enabled: false
+    dockerfile: Dockerfile
+    context: .
+    runtime: false
+security:
+  sast_provider: fallback

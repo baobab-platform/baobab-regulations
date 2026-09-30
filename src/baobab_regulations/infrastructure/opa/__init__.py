@@ -1,5 +1,7 @@
-"""OPA adapter package — first deterministic evaluator implementation."""
+"""OPA HTTP / Rego adapter package.
 
-from baobab_regulations.infrastructure.opa.reference_evaluator import ReferenceEvaluator
+Reserved for the production policy decision path (BRIR → Rego → OPA).
+Offline deterministic evaluators live under ``infrastructure.evaluation``.
+"""
 
-__all__ = ["ReferenceEvaluator"]
+__all__: list[str] = []

@@ -1,5 +1,6 @@
 """Persistence ports for regulatory knowledge and decisions."""
 
+from datetime import datetime
 from typing import Protocol
 
 from baobab_regulations.domain.decisions.models import RegulatoryDecision
@@ -19,5 +20,5 @@ class RuleSetRepositoryPort(Protocol):
         self,
         *,
         corridor_profile: str,
-        knowledge_time: str,
+        knowledge_time: datetime,
     ) -> str | None: ...

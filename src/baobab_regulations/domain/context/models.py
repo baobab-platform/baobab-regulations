@@ -3,6 +3,10 @@
 PlatformContext (tenant, organisation, legal entity, market, trade lane)
 is owned by baobab-cp. Regulations only holds opaque references and enriches
 them with regulatory dimensions.
+
+Jurisdiction roles are distinct from regulatory regimes (ADR-REG-0017,
+ADR-REG-0026). A regime such as AfCFTA is never a jurisdiction code and is
+not modelled as a JurisdictionRoleKind.
 """
 
 from datetime import datetime
@@ -14,6 +18,8 @@ from baobab_regulations.domain.shared.ids import HSCode, JurisdictionCode, Regim
 
 
 class JurisdictionRoleKind(StrEnum):
+    """Roles a jurisdiction may play in an evaluation — not regimes."""
+
     EXPORTER_ESTABLISHMENT = "exporter_establishment"
     IMPORTER_ESTABLISHMENT = "importer_establishment"
     ORIGIN = "origin"
@@ -21,13 +27,11 @@ class JurisdictionRoleKind(StrEnum):
     IMPORT_JURISDICTION = "import_jurisdiction"
     DESTINATION = "destination"
     TRANSIT = "transit"
-    PREFERENTIAL_REGIME = "preferential_regime"
 
 
 class JurisdictionRole(BaseModel):
     role: JurisdictionRoleKind
     jurisdiction: JurisdictionCode
-    regime: RegimeCode | None = None
 
 
 class PlatformContextRef(BaseModel):
@@ -46,6 +50,10 @@ class RegulatoryContext(BaseModel):
 
     platform: PlatformContextRef
     jurisdiction_roles: list[JurisdictionRole] = Field(default_factory=list)
+    regulatory_regimes: list[RegimeCode] = Field(
+        default_factory=list,
+        description="Preferential or other regimes applicable to this evaluation (e.g. AfCFTA).",
+    )
     regulated_activity: str | None = None
     commodity_description: str | None = None
     hs_classification: HSCode | None = None
