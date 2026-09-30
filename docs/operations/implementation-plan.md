@@ -1,33 +1,25 @@
-# Gate REG — Implementation Plan from ADR-REG-0001…0030
+# Gate REG — Implementation Plan (summary)
 
-**Status:** Active working plan  
-**Date:** 2026-09-30  
-**Repo:** `baobab-platform/baobab-regulations`  
 **Branch / PR:** `feat/regulations-scaffold` → [PR #4](https://github.com/baobab-platform/baobab-regulations/pull/4)
-
-## Gate sequence
 
 ```text
 REG-0  Scaffold + invariants          DONE
 REG-1  Platform contracts + tenancy   DONE
 REG-2  Canonical aggregates + schema  DONE
-REG-3  Source registry + provenance   NEXT (or REG-4)
-REG-4  BRIR v0 + applicability
-REG-5  Evaluation engine + UG→ZA coffee golden
-REG-6  Persistence + replay store
-REG-7  Live OPA adapter (optional path)
-REG-8–12  Ingestion, AI, events, packs, commercial
+REG-3  Source registry + provenance   DONE
+REG-4  BRIR v0 + applicability        NEXT
+REG-5  Evaluation + UG→ZA coffee golden
+REG-6–12  Persistence hardening, OPA, ingestion, AI, packs, commercial
 ```
 
-## REG-2 (done)
+## REG-3 (done)
 
-Domain: `RegulatoryInstrument`, `Provision`, `DerivedRule`, `RegulatoryAuthority`, `Jurisdiction`, `RegulatoryRegime`, `RuleSetRecord`.
+- `AuthoritativeSource`, `SourceArtefact`, `ProvenanceLink`, `DerivedRuleRegistration`
+- `RightsClass`: allow_store_text | hash_only | citation_only | no_ai_train
+- `InMemorySourceRegistry` refuses derived rules without source+artefact+rights
+- Migration `000002_source_registry.sql`
+- Architecture test forbids vendor SDKs in domain
 
-Persistence: `migrations/000001_regulatory_decisions.sql`; in-memory append-only decisions + VERIFIED/CERTIFIED rule sets; Postgres skeletons via asyncpg.
+## Next: REG-4
 
-## Follow-now
-
-1. REG-3 source registry / rights, **or** REG-4 BRIR v0 + coffee fragment from `ReferenceEvaluator`
-2. REG-5 golden cases against BRIR before OPA / packs / commercial
-
-Full matrix: `artifacts/gate-reg-implementation-plan.md` (local project).
+BRIR fragment schema v0; extract UG→ZA coffee checks from ReferenceEvaluator; VERIFIED-only load into active rule set.
