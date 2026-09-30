@@ -44,18 +44,17 @@
 
 | Issue | Resolution |
 |-------|------------|
-| `.baobab/repository.yaml` non-platform dialect | Replaced with `schema_version: 1` shape (lifecycle, capabilities, package_managers, environment.baobab_dev, artifacts, security.sast_provider) matching baobab-cp / baobab-pulse / shared |
-| `JurisdictionRoleKind.PREFERENTIAL_REGIME` + `JurisdictionCode("AfCFTA")` | Removed; AfCFTA modelled as `RegimeCode` on `origin_regime` / `regulatory_regimes` |
-| Ruff I import order in `domain/shared` and `tenancy` | Alphabetical isort order |
-| `ReferenceEvaluator` under `infrastructure.opa` | Moved to `infrastructure.evaluation.reference`; `opa` package reserved for live OPA |
+| `.baobab/repository.yaml` non-platform dialect | Replaced with `schema_version: 1` shape matching baobab-cp / baobab-pulse / shared |
+| `JurisdictionRoleKind.PREFERENTIAL_REGIME` + `JurisdictionCode("AfCFTA")` | Removed; AfCFTA modelled as `RegimeCode` |
+| Ruff I import order | Alphabetical isort order |
+| `ReferenceEvaluator` under `infrastructure.opa` | Moved to `infrastructure.evaluation` |
 | `RuleSetRepositoryPort.knowledge_time: str` | Typed as `datetime` |
-| CONTRIBUTING nabhold / `.nabhold` paths | Updated to baobab-platform / `.baobab` |
+| CONTRIBUTING nabhold paths | Updated to baobab-platform / `.baobab` |
 
 ## Next recommended gates
 
-1. Accept / stabilise ADR-REG-0001…0030 status on `main`.
-2. Open PR for this scaffold from `feat/regulations-scaffold`.
-3. Introduce `migrations/` for minimal `regulatory_decisions` table.
-4. Wire OPA HTTP evaluator behind `RegulatoryPolicyEvaluatorPort` in `infrastructure.opa`.
-5. Land first verified BRIR fragment for UG→ZA green coffee.
-6. Activate knowledge-plane dependency group only when source ingestion begins.
+Follow **[implementation-plan.md](./implementation-plan.md)** / `artifacts/gate-reg-implementation-plan.md`.
+
+**REG-1 implemented on branch:** capability-provider planned keys, platform context redemption, request-scope deps, draft evaluation audit events.
+
+Next: **REG-2** (aggregates + first migration). Do not start live OPA, ingestion, AI, packs, or commercial work before REG-5 coffee goldens are green against BRIR.

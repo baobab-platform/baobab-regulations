@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://baobab.platform/contracts/regulations/events/evaluation.completed.v0.json",
+  "title": "regulations.evaluation.completed.v0",
+  "description": "Draft audit event emitted when an evaluation completes (REG-1 schema only; not published to Shared yet).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specversion", "type", "source", "id", "time", "data"],
+  "properties": {
+    "specversion": { "const": "1.0" },
+    "type": { "const": "regulations.evaluation.completed.v0" },
+    "source": { "type": "string", "minLength": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "time": { "type": "string", "format": "date-time" },
+    "datacontenttype": { "const": "application/json" },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id", "decision_id", "outcome", "rule_set_fingerprint", "correlation_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "decision_id": { "type": "string", "minLength": 1 },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "SATISFIED",
+            "SATISFIED_WITH_REQUIREMENTS",
+            "UNSATISFIED",
+            "PROHIBITED",
+            "INDETERMINATE",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "rule_set_fingerprint": { "type": "string", "minLength": 1 },
+        "correlation_id": { "type": "string", "minLength": 1 },
+        "replay_key": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
