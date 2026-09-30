@@ -1,0 +1,83 @@
+# .baobab/capability-provider.yaml
+#
+# Baobab Capability Provider Declaration for baobab-regulations
+#
+# Conforms to:
+#   baobab-platform/shared/contracts/capability/v1/provider-declaration.schema.json
+# Governing decisions:
+#   ADR-SHARED-017 (EA-02), ADR-REG-0002, ADR-REG-0026
+#
+# Answers ONE question: which canonical Baobab domain capabilities do this
+# engine's CapabilityProviders implement, or formally plan to implement?
+#
+# Authority:
+#   - Shared catalogue.yaml defines which capabilities exist.
+#   - This file only references or proposes keys; it never defines semantics.
+#   - Control Plane owns activation, bindings, grants, health, resolution.
+#   - EA-09 owns certification (no certified field here).
+#
+# Catalogue status (2026-09-30):
+#   No regulations.* keys are catalogued in Shared yet. All entries below are
+#   proposed_key only. Promote to capability_key + CONTRACTED/IMPLEMENTED only
+#   after Shared registers the regulations namespace and contracts are proven.
+#
+# Validate (with a Shared checkout):
+#   python3 <shared>/scripts/capability_catalogue.py validate-declaration \
+#     .baobab/capability-provider.yaml --engine-id baobab-regulations --repository-root .
+
+schema:
+  name: baobab-capability-provider-declaration
+  version: "1.0"
+
+engine:
+  # Repository name as engine identity (ADR-SHARED-012).
+  engine_id: baobab-regulations
+
+# No providers[] until a catalogued regulations.* capability is proven against
+# a canonical Shared contract. The offline reference evaluator is an internal
+# scaffold tool, not a declared CapabilityProvider.
+
+planned_capabilities:
+  - proposed_key: regulations.context.resolve
+    proposal_status: PROPOSED
+    description: >-
+      Resolve regulatory applicability context (jurisdiction roles, regimes,
+      HS, legal/knowledge time) from an opaque platform context reference
+      without Regulations owning tenant, organisation, legal entity, market,
+      or trade-lane truth (ADR-REG-0017, ADR-REG-0026).
+    provenance:
+      authority:
+        repository: baobab-platform/baobab-regulations
+        decision: ADR-REG-0017
+
+  - proposed_key: regulations.decision.evaluate
+    proposal_status: PROPOSED
+    description: >-
+      Produce a deterministic RegulatoryDecision (outcome, enforcement class,
+      reasons, recommended disposition) for a verified rule set. PDP only —
+      operational enforcement remains with domain PEPs (ADR-REG-0018, ADR-REG-0019).
+    provenance:
+      authority:
+        repository: baobab-platform/baobab-regulations
+        decision: ADR-REG-0018
+
+  - proposed_key: regulations.change.subscribe
+    proposal_status: PROPOSED
+    description: >-
+      Subscribe to regulatory change and impact notifications for activated
+      coverage profiles (ADR-REG-0023, ADR-REG-0024). Not implemented until REG-10.
+    provenance:
+      authority:
+        repository: baobab-platform/baobab-regulations
+        decision: ADR-REG-0024
+
+  - proposed_key: regulations.pack.compose
+    proposal_status: PROPOSED
+    description: >-
+      Compose jurisdiction / corridor / regime packs and coverage manifests from
+      already-verified regulatory modules without altering regulatory truth
+      (ADR-REG-0029). Not implemented until REG-11.
+    provenance:
+      authority:
+        repository: baobab-platform/baobab-regulations
+        decision: ADR-REG-0029

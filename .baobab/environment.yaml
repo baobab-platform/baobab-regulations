@@ -1,0 +1,33 @@
+# Conforms to baobab-platform/shared development-environment contract v1.0
+schema:
+  name: "baobab-platform-development-environment-contract"
+  version: "1.0"
+
+application:
+  name: "baobab-regulations"
+  version: "0.1.0"
+
+environment:
+  provider: "baobab-dev"
+  # full profile: Python + PostgreSQL client + Docker (OPA sidecar, local DBs).
+  # Knowledge-plane tools (Haystack etc.) are project dependencies, not image requirements.
+  profile: "full"
+  minimum_version: "1.4.4"
+  contract_minimum_version: "1.0"
+
+compatibility_policy:
+  strict_runtime_versions: true
+  allow_newer_patch_versions: true
+  allow_newer_minor_versions: false
+  allow_older_versions: false
+
+validation:
+  required_capabilities:
+    - "languages.python"
+    - "database.postgresql"
+    - "development.docker"
+    - "development.github_cli"
+
+notes:
+  - "Codespaces uses ghcr.io/baobab-platform/baobab-dev:1.4.4."
+  - "Primary language is Python 3.14 (uv). OPA runs as a sidecar, not a host runtime."

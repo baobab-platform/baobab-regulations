@@ -1,0 +1,27 @@
+# Local scaffold stack — PostgreSQL + OPA.
+# Qdrant / Haystack / Docling are deferred until the knowledge plane is activated.
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: baobab
+      POSTGRES_PASSWORD: baobab
+      POSTGRES_DB: baobab_regulations
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baobab -d baobab_regulations"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  opa:
+    image: openpolicyagent/opa:0.70.0
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-level=info"
+    ports:
+      - "8181:8181"

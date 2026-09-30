@@ -1,22 +1,33 @@
-<!-- Target path: baobab-platform/engine-template/contracts/README.md (becomes <new-repo>/contracts/README.md in any repo created from this template). -->
-
 # Contracts
 
-This directory is a placeholder for how this engine consumes or publishes
-`baobab-platform/shared` contracts (event/AsyncAPI schemas, API contracts, the
-Development Environment Contract this repo already declares under
-`.baobab/`) — not a contract definition of its own. Canonical contract
-schemas live in `baobab-platform/shared`, pinned by tag (e.g. `baobab-platform/shared@v1`),
-not copied or forked into this repo.
+This directory holds **pinned** contract dependencies consumed or published by
+`baobab-regulations`.
 
-Fill this in once this engine actually consumes or publishes a contract:
+## Consumed (from `baobab-platform/shared`)
 
-- Which `baobab-platform/shared` contract(s), at which pinned version.
-- Whether this engine is a producer, a consumer, or both, for each.
-- Where in this repo's own code that contract is enforced (generated types,
-  schema validation, etc.).
+- Platform context / organisation / legal-entity / market / trade-lane identity
+  shapes (Control Plane owns the truth; Regulations only holds references —
+  ADR-REG-0026).
+- Capability grant / binding vocabulary used to authorise Regulations access
+  (ADR-REG-0002, ADR-REG-0030).
+- Shared CloudEvents envelope and RFC 9457 problem-details profiles (when
+  event emission is activated).
 
-Delete this file (or leave it empty with a one-line "none yet") if this
-engine genuinely doesn't touch any shared contract beyond the Development
-Environment Contract — don't leave placeholder content that looks real but
-isn't.
+## Published (planned)
+
+- `regulations.decision.v1` — wire shape for `RegulatoryDecision`
+- `regulations.assessment.requested.v1` / `regulations.assessment.completed.v1`
+
+## Draft (REG-1, local only)
+
+Under `contracts/events/`:
+
+- `regulations.evaluation.requested.v0.json`
+- `regulations.evaluation.completed.v0.json`
+
+These are **draft** schemas for audit emission. They are not catalogued in Shared
+and must not be treated as stable public API until promoted.
+
+Until shared contracts are pinned, domain models under
+`src/baobab_regulations/domain/` remain the source of truth for regulatory types.
+Do not redefine Control Plane or IAM identities here.
