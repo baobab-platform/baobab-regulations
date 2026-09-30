@@ -6,7 +6,7 @@ from baobab_regulations.application.ports.evaluator import RegulatoryPolicyEvalu
 from baobab_regulations.application.ports.repository import DecisionRepositoryPort
 from baobab_regulations.domain.context.models import RegulatoryContext
 from baobab_regulations.domain.decisions.models import RegulatoryDecision
-from baobab_regulations.tenancy.context import require_tenant_context
+from baobab_regulations.tenancy.context import resolve_platform_context
 
 
 class EvaluationService:
@@ -31,9 +31,10 @@ class EvaluationService:
         facts: dict[str, Any],
         rule_set_id: str,
     ) -> RegulatoryDecision:
-        require_tenant_context(context.platform.tenant_id)
+        resolved_platform = resolve_platform_context(context.platform)
+        bound = context.model_copy(update={"platform": resolved_platform})
         decision = await self._evaluator.evaluate(
-            context=context,
+            context=bound,
             facts=facts,
             rule_set_id=rule_set_id,
         )

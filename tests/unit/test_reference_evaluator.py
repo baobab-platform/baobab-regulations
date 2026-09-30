@@ -80,6 +80,8 @@ async def test_evaluation_service_requires_tenant() -> None:
     from baobab_regulations.infrastructure.persistence.memory import InMemoryDecisionRepository
 
     service = EvaluationService(ReferenceEvaluator(), InMemoryDecisionRepository())
-    ctx = _ctx(platform=PlatformContextRef(tenant_id=""))
+    # Bypass model validator to exercise service-level resolve_platform_context.
+    bare = PlatformContextRef.model_construct(tenant_id="")
+    ctx = _ctx(platform=bare)
     with pytest.raises(TenantContextError):
         await service.evaluate(context=ctx, facts={}, rule_set_id="ug-za-coffee-v0")
