@@ -13,6 +13,12 @@ FORBIDDEN_IN_DOMAIN = (
     "fastapi",
     "asyncpg",
     "opentelemetry",
+    "httpx",
+    "requests",
+    "openai",
+    "anthropic",
+    "haystack",
+    "docling",
 )
 
 
