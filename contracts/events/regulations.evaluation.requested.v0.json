@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://baobab.platform/contracts/regulations/events/evaluation.requested.v0.json",
+  "title": "regulations.evaluation.requested.v0",
+  "description": "Draft audit event emitted when an evaluation is requested (REG-1 schema only; not published to Shared yet).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specversion", "type", "source", "id", "time", "data"],
+  "properties": {
+    "specversion": { "const": "1.0" },
+    "type": { "const": "regulations.evaluation.requested.v0" },
+    "source": { "type": "string", "minLength": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "time": { "type": "string", "format": "date-time" },
+    "datacontenttype": { "const": "application/json" },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id", "rule_set_id", "correlation_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "context_id": { "type": ["string", "null"] },
+        "rule_set_id": { "type": "string", "minLength": 1 },
+        "correlation_id": { "type": "string", "minLength": 1 },
+        "corridor_profile": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
