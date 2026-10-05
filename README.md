@@ -991,6 +991,71 @@ Billing and financial posting remain outside this engine.
 
 ---
 
+
+# Integration with Baobab Trade Docs
+
+ADR-SHARED-019 and the RTD-03 amendments to ADR-REG-0026/0027 establish a strict separation between **regulatory meaning** and **documentary/Customs workflow state**.
+
+~~~text
+Regulations
+────────────────────────────
+What applies?
+What is required?
+What counts as sufficient regulatory evidence?
+Is the requirement satisfied?
+What RegulatoryDecision follows?
+
+
+Trade Docs
+────────────────────────────
+Which TradeDocument exists?
+Which DocumentVersion is current?
+What issuer/provenance/verification facts exist?
+What was submitted?
+What authority response was received?
+~~~
+
+The hard invariants are:
+
+~~~text
+DocumentRequirement
+    !=
+TradeDocument
+
+TradeDocument
+    !=
+DocumentVersion
+
+Document verification
+    !=
+Regulatory requirement satisfaction
+~~~
+
+Regulations owns document/permit/evidence requirements and their satisfaction semantics.
+
+Trade Docs owns TradeDocument identity/version/content, document dossiers, Customs declaration/submission workflows and authority-response records.
+
+The two engines integrate by governed APIs/events and versioned cross-engine references. They never share canonical databases.
+
+A typical document-dependent flow is:
+
+~~~mermaid
+sequenceDiagram
+    participant T as Trade / TMS
+    participant R as Regulations
+    participant D as Trade Docs
+
+    T->>R: product / shipment / route facts
+    R-->>D: document / permit requirements
+    D->>D: obtain, version and verify documents
+    D-->>R: document-version + verification references
+    R-->>T: refreshed RegulatoryDecision
+~~~
+
+Only the competent external authority gives a permit, certificate, Customs assessment or release its sovereign legal effect.
+
+---
+
 # Integration with Baobab Pulse
 
 `baobab-pulse` and `baobab-regulations` may use common technologies such as Haystack and Qdrant, but they remain separate bounded contexts.
@@ -1160,7 +1225,7 @@ UG / ZA Jurisdiction Packs
         ↓
 UG → ZA Coffee / Vanilla Profile
         ↓
-Trade / ERP Integration
+Trade Docs / Trade / ERP Integration
         ↓
 Change Intelligence
         ↓

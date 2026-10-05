@@ -8,6 +8,8 @@
 **Initial Corridor:** Uganda → South Africa  
 **Initial Commodities:** Coffee and vanilla  
 **Date:** 2026-09-29  
+**Amended:** 2026-10-05 — RTD-03, under accepted ADR-SHARED-019 and aligned with the ADR-REG-0026 RTD-03 amendment, ADR-TDOC-0001, ADR-TDOC-0002 and ADR-PULSE-012  
+**Platform Boundary Authority:** ADR-SHARED-019 — Regulatory Intelligence, Trade Documents and Evidence Cross-Engine Boundary  
 **Decision Type:** Cross-Border Trade / Customs / Origin / SPS / Documentation / Tax / Regulatory Profiles
 
 ---
@@ -98,6 +100,947 @@ The resulting cross-border decision is a composition of those determinations.
 > **Classification determines what the goods are for customs purposes. Origin determines where they legally originate. A trade regime determines whether preference is available. SPS determines whether the goods may cross the plant-health boundary. Customs determines declaration, valuation and border charges. Documentation proves the propositions on which those determinations depend.**
 
 Those concepts SHALL remain separate.
+
+---
+
+
+# 1A. RTD-03 Normative Amendment — Documentary and Customs Workflow Decomposition
+
+This section is a **normative amendment** to ADR-REG-0027.
+
+The original profile was intentionally comprehensive because, when written, Baobab Trade Docs did not yet exist as an explicit engine. It therefore described both:
+
+~~~text
+what documentary evidence regulation requires
+~~~
+
+and, in some places, wording that could be interpreted as:
+
+~~~text
+Regulations owns the document/document workflow itself.
+~~~
+
+That second interpretation is now rejected.
+
+The target architecture is:
+
+~~~mermaid
+flowchart LR
+    T[Trade / TMS\ncommercial + shipment facts] --> R[Baobab Regulations\nnormative meaning]
+    R -->|DocumentRequirement\nPermitRequirement\nEvidenceRequirement| D[Baobab Trade Docs\ndocument + Customs workflow]
+    D -->|DocumentVersion refs\nverification facts\nauthority responses| R
+    R --> DEC[RegulatoryDecision]
+    DEC --> PEP[Trade / TMS / ERP PEP]
+    R --> P[Pulse\nrisk / opportunity / intelligence]
+    D --> P
+~~~
+
+The profile therefore continues to model **documentation as a regulatory rule family**, but Regulations owns the **requirements and satisfaction decisions**, while Trade Docs owns the **document instances and workflow**.
+
+---
+
+# 1B. The Cross-Border Profile Has Three Different Documentary Layers
+
+The profile SHALL distinguish:
+
+| Layer | Meaning | Canonical authority |
+|---|---|---|
+| Documentary requirement | What the law/regime requires and under what conditions | Regulations |
+| Documentary object/workflow | The concrete document/version/submission/response | Trade Docs |
+| Regulatory sufficiency | Whether the concrete documentary facts satisfy the requirement | Regulations |
+
+This means:
+
+~~~text
+PHYTOSANITARY_CERTIFICATE_REQUIRED
+        → Regulations
+
+TradeDocument TD-100 / DocumentVersion 3
+        → Trade Docs
+
+TD-100/v3 satisfies requirement R-22
+        → Regulations
+~~~
+
+---
+
+# 1C. Documentation Remains a Regulatory Rule Family
+
+ADR-REG-0027's original architecture is preserved:
+
+~~~text
+classification
+origin
+trade regime
+SPS
+documentation
+transit
+valuation
+duty
+tax
+declaration
+release readiness
+~~~
+
+But the word **documentation** now means:
+
+~~~text
+regulatory documentary requirements
++
+regulatory evaluation of documentary sufficiency
+~~~
+
+It does **not** mean:
+
+~~~text
+document repository
+document lifecycle
+document versioning
+document rendering
+submission workflow
+Customs authority message store
+~~~
+
+Those are Trade Docs concerns.
+
+---
+
+# 1D. Requirement-Type Semantics Versus Document-Type Semantics
+
+Regulations MAY define or use controlled regulatory requirement concepts such as:
+
+~~~text
+PHYTOSANITARY_CERTIFICATE
+CERTIFICATE_OF_ORIGIN
+IMPORT_PERMIT
+EXPORT_LICENCE
+QUALITY_CERTIFICATE
+COMMERCIAL_INVOICE
+PACKING_LIST
+CUSTOMS_DECLARATION
+TRANSPORT_DOCUMENT
+~~~
+
+for the purpose of stating requirements.
+
+Trade Docs MAY classify concrete TradeDocument objects using compatible document-type vocabulary.
+
+Neither side SHALL turn a type registry into a hidden rule engine.
+
+The critical distinction is:
+
+~~~text
+document_type
+    = semantic classification
+
+DocumentRequirement
+    = regulatory proposition
+
+TradeDocument
+    = concrete documentary object
+~~~
+
+---
+
+# 1E. Canonical Ownership Matrix for This Profile
+
+| Concept | Owner |
+|---|---|
+| HS classification decision | Regulations |
+| Origin determination | Regulations |
+| Preferential eligibility | Regulations |
+| SPS requirement | Regulations |
+| Permit requirement | Regulations |
+| Document requirement | Regulations |
+| Evidence requirement | Regulations |
+| Acceptable issuer criteria | Regulations |
+| Required signature/form/validity criteria | Regulations |
+| Requirement satisfaction | Regulations |
+| TradeDocument | Trade Docs |
+| DocumentVersion | Trade Docs |
+| DocumentContent / ContentArtifact | Trade Docs |
+| DocumentDossier | Trade Docs |
+| issuer claim | Trade Docs |
+| document authenticity/verification workflow | Trade Docs |
+| CustomsCase | Trade Docs |
+| CustomsDeclaration workflow | Trade Docs |
+| submission lifecycle | Trade Docs |
+| authority-response record | Trade Docs |
+| external legal effect of certificate/permit/release | Competent external authority |
+| shipment/order hold/release | Trade/TMS |
+| accounting/payment of border charges | ERP/Ledger |
+| commercial risk/opportunity | Pulse |
+
+---
+
+# 1F. Regulatory Document Requirement Model
+
+The conceptual DocumentRequirement in this ADR remains Regulations-owned.
+
+It SHOULD be interpreted as:
+
+~~~text
+DocumentRequirement
+├── requirement_id
+├── document_purpose
+├── acceptable_document_types[]
+├── applies_to
+├── legal_basis_refs[]
+├── jurisdiction
+├── regime
+├── required_issuer_role?
+├── acceptable_issuer_refs[]?
+├── signature_requirement?
+├── required_data_elements[]?
+├── format_constraints[]?
+├── original_copy_electronic_rule?
+├── valid_from
+├── valid_until?
+├── timing_rule
+├── quantity/value threshold?
+├── condition_expression
+├── evidence_requirement_refs[]
+├── effect_if_unsatisfied
+└── version / provenance
+~~~
+
+It SHALL not contain mutable TradeDocument lifecycle state.
+
+---
+
+# 1G. Documentary Instance Model Is External to Regulations
+
+A concrete documentary object is referenced from Trade Docs.
+
+Conceptually:
+
+~~~text
+TradeDocumentReference
+├── owner = baobab-trade-docs
+├── trade_document_id
+├── document_version_id
+├── document_type
+├── issuer_claim_ref?
+├── subject_refs[]
+├── issued_at?
+├── expires_at?
+├── verification_fact_refs[]
+└── provenance/version metadata
+~~~
+
+The exact portable shape belongs to Shared RTD-05.
+
+Regulations SHALL not prematurely freeze this conceptual shape into an incompatible local cross-engine contract.
+
+---
+
+# 1H. Document Authenticity, Validity and Sufficiency
+
+ADR-REG-0027 already states:
+
+~~~text
+DocumentAuthenticity
+    !=
+RequirementSatisfaction
+~~~
+
+RTD-03 makes the intermediate distinctions explicit.
+
+~~~text
+Integrity
+    ↓
+Authenticity
+    ↓
+Issuer verification
+    ↓
+Document lifecycle validity
+    ↓
+Regulatory-context validity
+    ↓
+Requirement satisfaction
+~~~
+
+These are not guaranteed implications.
+
+A document can be authentic but fail because it is:
+
+- expired;
+- for the wrong consignment;
+- for the wrong commodity;
+- from an issuer not acceptable under the rule;
+- valid only in another jurisdiction;
+- missing required data;
+- outside the permitted timing window;
+- revoked;
+- applicable to another origin/destination;
+- insufficient for the claimed preference.
+
+Trade Docs provides documentary facts.
+
+Regulations applies the legal criteria.
+
+---
+
+# 1I. Permit and Certificate Semantics
+
+A permit or certificate has at least three relevant identities:
+
+~~~text
+1. External legal act / credential
+   authority = issuing institution
+
+2. TradeDocument / DocumentVersion
+   authority = Trade Docs for Baobab documentary representation
+
+3. Regulatory standing / satisfaction result
+   authority = Regulations
+~~~
+
+Example:
+
+~~~text
+NPPOZA import permit
+        │
+        ├── issued by competent authority
+        │
+        ├── represented as TradeDocument TD-501
+        │
+        └── evaluated by Regulations against PermitRequirement PR-19
+~~~
+
+None of those three identities should be collapsed.
+
+---
+
+# 1J. Exporter-Level Licence Versus Consignment Document
+
+The original distinction remains important.
+
+An exporter-level coffee licence may establish reusable standing across many consignments.
+
+Regulations MAY maintain:
+
+~~~text
+RegulatoryRegistration / RegulatoryStanding
+├── legal_entity_ref
+├── registration/licence type
+├── authority_ref
+├── legal status
+├── valid_from
+├── valid_until
+└── verification/evidence refs
+~~~
+
+Trade Docs MAY hold the licence's documentary representation.
+
+A single TradeDocument instance is therefore not necessarily the regulatory standing itself.
+
+---
+
+# 1K. Origin Evidence Boundary
+
+The following remain separate:
+
+~~~text
+Origin determination
+        → Regulations
+
+Proof-of-origin requirement
+        → Regulations
+
+Certificate/declaration document instance
+        → Trade Docs
+
+Document verification
+        → Trade Docs
+
+Preferential evidence sufficiency
+        → Regulations
+~~~
+
+Example:
+
+~~~mermaid
+flowchart LR
+    O[Regulations\nOrigin = Uganda] --> P[Regulations\nAfCFTA proof required]
+    TD[Trade Docs\nCertificate of Origin v2] --> V[Trade Docs\nissuer/signature/version facts]
+    P --> E[Regulations\nPreference Evidence Assessment]
+    V --> E
+    E --> PREF[PreferentialTariffAssessment]
+~~~
+
+Failure to prove preference does not automatically reclassify or prohibit the goods.
+
+---
+
+# 1L. SPS Documentary Boundary
+
+For phytosanitary requirements:
+
+~~~text
+commodity/origin/destination/legal-time facts
+        ↓
+Regulations
+        ↓
+SPS requirement
+        ↓
+phytosanitary document requirement
+        ↓
+Trade Docs document workflow
+        ↓
+Trade Docs verified documentary facts
+        ↓
+Regulations satisfaction evaluation
+        ↓
+SPS decision
+~~~
+
+The NPPO remains the authority that issues the certificate.
+
+Trade Docs does not become NPPO.
+
+Regulations does not become the certificate repository.
+
+---
+
+# 1M. Customs Declaration Decomposition
+
+The phrase “Customs declaration” SHALL be decomposed.
+
+Regulations owns:
+
+~~~text
+whether declaration is required
+which classification/origin/valuation rules apply
+required regulatory propositions/data
+required supporting evidence
+timing/legal consequences
+regulatory assessment of defects
+~~~
+
+Trade Docs owns:
+
+~~~text
+CustomsDeclaration workflow aggregate
+declaration document/version
+supporting-document dossier
+submission
+amendment
+resubmission
+authority acknowledgement
+authority rejection/error
+authority message
+status projection
+~~~
+
+The competent Customs administration owns:
+
+~~~text
+official acceptance
+assessment
+hold
+release
+ruling
+~~~
+
+Trade/TMS owns:
+
+~~~text
+shipment operational state
+~~~
+
+ERP/Ledger owns:
+
+~~~text
+financial posting
+~~~
+
+---
+
+# 1N. Customs Release Readiness Versus Customs Release
+
+Regulations MAY produce:
+
+~~~text
+release-readiness recommendation
+requirements satisfied / unsatisfied / indeterminate
+recommended disposition
+~~~
+
+That is not a sovereign release.
+
+Trade Docs MAY record:
+
+~~~text
+authority response = RELEASED
+~~~
+
+That is a Baobab record of an external authority act.
+
+It is still not Trade Docs exercising sovereign release authority.
+
+---
+
+# 1O. Two-Phase Cross-Border Documentary Evaluation
+
+The profile SHALL support a planning phase and an execution/reassessment phase.
+
+## Phase 1 — pre-flight requirement determination
+
+~~~mermaid
+flowchart TD
+    C[CrossBorderTradeContext] --> R[Regulations]
+    R --> CL[Classification]
+    R --> OR[Origin]
+    R --> SPS[SPS]
+    R --> DR[DocumentRequirements]
+    R --> PR[PermitRequirements]
+    R --> PRE[Pre-flight RegulatoryDecision]
+~~~
+
+The result may identify what is still needed.
+
+## Phase 2 — evidence-backed satisfaction
+
+~~~mermaid
+flowchart TD
+    REQ[Document / Permit Requirements] --> TD[Trade Docs]
+    TD --> DOCS[DocumentVersions + verification facts]
+    DOCS --> R2[Regulations reassessment]
+    CTX[Current cross-border context] --> R2
+    R2 --> FINAL[RegulatoryDecision]
+    FINAL --> PEP[Trade / TMS / ERP PEP]
+~~~
+
+This model avoids the anti-pattern:
+
+~~~text
+document exists?
+    yes → compliant
+    no  → prohibited
+~~~
+
+---
+
+# 1P. Cross-Border Context Adds Documentary References, Not Documents
+
+The CrossBorderTradeContext in §78 MAY be extended with references such as:
+
+~~~text
+document_dossier_ref?
+document_version_refs[]
+customs_case_refs[]
+authority_response_refs[]
+~~~
+
+where those are material to evaluation.
+
+It SHALL not embed entire Trade Docs aggregates.
+
+The authoritative documentary state remains resolvable from Trade Docs under access control.
+
+---
+
+# 1Q. Evidence Graph for a Document-Dependent Decision
+
+A cross-border RegulatoryDecision SHOULD be explainable through a graph such as:
+
+~~~mermaid
+flowchart LR
+    SRC[Legal Source] --> RULE[RuleVersion]
+    RULE --> REQ[DocumentRequirement]
+    REQ --> SAT[RequirementSatisfaction]
+
+    TDV[Trade Docs\nDocumentVersion] --> SAT
+    VER[Trade Docs\nVerification Facts] --> SAT
+    CTX[CrossBorderTradeContext] --> SAT
+
+    SAT --> DEC[RegulatoryDecision]
+    DEC --> ACT[Operational Disposition]
+~~~
+
+The graph preserves the difference between legal basis, documentary evidence and operational action.
+
+---
+
+# 1R. Evidence Snapshot and Replay
+
+For a consequential decision Regulations SHALL preserve:
+
+~~~text
+requirement version
+document reference
+document version
+verification state/reference
+legal time
+knowledge time
+relevant authority response reference
+decision ruleset fingerprint
+evaluation result
+~~~
+
+This is immutable decision evidence.
+
+If Trade Docs later receives a corrected certificate or new authority response, the old decision remains replayable as made.
+
+---
+
+# 1S. Documentary Staleness
+
+Material documentary events MAY invalidate a prior decision.
+
+Examples:
+
+~~~text
+document superseded
+certificate expired
+permit revoked
+issuer verification changed
+consignment changed
+quantity changed
+origin changed
+authority response changed
+declaration amended
+submission rejected
+~~~
+
+The owner of the RegulatoryDecision remains Regulations.
+
+Trade Docs SHALL emit or expose the documentary fact.
+
+Regulations SHALL determine whether reassessment is required.
+
+---
+
+# 1T. Event Directionality for the Cross-Border Profile
+
+Subject to Shared contract governance:
+
+## Regulations → Trade Docs
+
+~~~text
+document requirement determined
+permit requirement determined
+classification assigned
+requirement changed
+regulatory decision issued/superseded
+~~~
+
+## Trade Docs → Regulations
+
+~~~text
+document issued/versioned
+document verification changed
+document superseded/expired/revoked
+declaration submitted
+submission rejected
+authority response received
+Customs case materially changed
+~~~
+
+## Regulations → Trade / TMS / ERP
+
+~~~text
+RegulatoryDecision
+classification result
+tariff/duty assessment
+tax assessment
+recommended disposition
+~~~
+
+## Regulations / Trade Docs → Pulse
+
+Facts may be consumed asynchronously for intelligence.
+
+Events state facts. Requests to create, submit, amend or reassess belong to governed API/capability/command boundaries.
+
+---
+
+# 1U. Error and Unknown Semantics
+
+The profile SHALL distinguish:
+
+~~~text
+document not yet supplied
+document supplied but unverified
+document verified but legally insufficient
+document expired
+document revoked
+wrong document version
+issuer unresolved
+requirement applicability unresolved
+Trade Docs unavailable
+Regulations unavailable
+authority response pending
+authority response unknown
+~~~
+
+These are materially different states.
+
+They SHALL not collapse into one DOCUMENT_ERROR or one NON_COMPLIANT state.
+
+The correct result may be:
+
+~~~text
+REQUIREMENT_PENDING
+UNSATISFIED
+INDETERMINATE
+REVIEW_REQUIRED
+WAITING_FOR_AUTHORITY
+~~~
+
+depending on the rule and workflow.
+
+---
+
+# 1V. Updated Integration Topology
+
+The original profile listed Trade, ERP and Pulse integrations.
+
+Trade Docs is now a first-class peer.
+
+~~~mermaid
+flowchart TB
+    CP[Control Plane\ntrusted platform context] --> R[Baobab Regulations]
+
+    T[Trade / TMS\nproduct shipment route value] --> R
+    R -->|requirements + decision refs| D[Baobab Trade Docs]
+    D -->|document/version/verification/authority refs| R
+
+    R -->|RegulatoryDecision| T
+    R -->|duty/VAT assessment| ERP[ERP / Ledger]
+
+    R --> P[Pulse]
+    D --> P
+
+    D --> AUTH[External Customs / Issuers]
+    AUTH --> D
+~~~
+
+---
+
+# 1W. Profile-Specific Reference Rules
+
+Cross-engine references SHALL preserve:
+
+~~~text
+owner engine
+object type
+object id
+version/revision where material
+tenant/scope
+resolved/observed time
+classification
+provenance
+~~~
+
+The exact Shared schema remains RTD-05 work.
+
+This profile SHALL not use ADR-SHARED-013 ExternalReference as a substitute for Baobab-to-Baobab canonical object references.
+
+---
+
+# 1X. Reconciliation of Existing Sections
+
+The following interpretation is normative.
+
+| Existing ADR-REG-0027 area | RTD-03 interpretation |
+|---|---|
+| §§20–25 origin/document distinctions | Retained; concrete document instances belong to Trade Docs |
+| §25 Documentary Purpose | Regulatory purpose/criteria belong to Regulations; documentary object metadata belongs to Trade Docs |
+| §§31–44 exporter/SPS/importer standing | Requirements/standing remain Regulations; documentary representations may be Trade Docs |
+| §§45–52 Customs documentation | Requirements remain Regulations; declaration/document workflow moves to Trade Docs |
+| §49 Documentary Families | Families are requirement/type semantics, not Regulations-owned document instances |
+| §50 Certificate Graph | Treat as regulatory requirement/evidence graph; concrete nodes resolve to Trade Docs versions |
+| §52 Document Validity | Documentary facts from Trade Docs; legal sufficiency from Regulations |
+| §§72–78 composite decision/context | Add documentary references where material |
+| §§89–95 data/AI/OPA | OPA evaluates verified requirement semantics, not document lifecycle |
+| §§96–98 Trade Integration | Add Trade Docs as separate document/Customs workflow provider |
+| §§99–102 ERP/Pulse/CMS | Retained |
+| §§103–106 material regulatory events | Retained; document events separately originate in Trade Docs |
+| §§107–116 golden cases | Cases must distinguish requirement state, document state and satisfaction |
+| §§127–129 certification/invariants | Extended by RTD-03 invariants |
+| §§131–132 implementation proof | Must include Trade Docs contract/reference integration |
+| §§133–137 realistic flow/final decision | Amended by §1V and updated final architecture |
+
+---
+
+# 1Y. RTD-03 Cross-Border Invariants
+
+Section 129 remains the canonical invariant register for this ADR.
+
+RTD-03 extends that register with REG-XBT-I36 through REG-XBT-I54. Those added invariants cover:
+
+- requirement/document separation;
+- Trade Docs ownership of concrete document identity and version;
+- Regulations ownership of documentary sufficiency;
+- Customs declaration workflow separation;
+- sovereign Customs authority;
+- permit/licence separation;
+- document-version-driven reassessment;
+- historical replay;
+- cross-engine reference ownership;
+- explicit unavailable/unknown semantics;
+- prohibition of direct Regulations ↔ Trade Docs database coupling;
+- prohibition of hidden regulatory logic in Trade Docs type registries;
+- preservation of external authority provenance;
+- exclusion of Pulse from the synchronous satisfaction path.
+
+The normative wording of each invariant is maintained in §129 to avoid duplicate invariant definitions.
+
+---
+
+# 1Z. Revised Implementation Sequence
+
+The original implementation sequence is amended to make the documentary boundary executable in the right order.
+
+~~~text
+Authoritative source registration
+        │
+        ▼
+Regulatory source ingestion / provenance
+        │
+        ▼
+Classification / origin / SPS / tariff rule domains
+        │
+        ▼
+DocumentRequirement / PermitRequirement domain
+        │
+        ▼
+RTD-04 Shared TradeDocument contract reconciliation
+        │
+        ▼
+RTD-05 cross-engine object reference contract
+        │
+        ▼
+RTD-06 Regulations ↔ Trade Docs APIs/events
+        │
+        ▼
+Trade Docs document/version/customs workflow integration
+        │
+        ▼
+Requirement-satisfaction evaluation
+        │
+        ▼
+Trade / TMS PEP integration
+        │
+        ▼
+ERP/Ledger financial handoff
+        │
+        ▼
+Pulse asynchronous intelligence
+        │
+        ▼
+Golden corpus + historical replay + shadow evaluation
+~~~
+
+Regulations may implement requirement semantics before Trade Docs runtime integration.
+
+It SHALL not fake the missing document engine by permanently absorbing TradeDocument lifecycle into Regulations.
+
+---
+
+# 1AA. Revised Minimum Documentary Proof
+
+Before the cross-border profile is considered production-capable for documentary decisions, the implementation SHOULD demonstrate at least:
+
+| Proof | Expected authority |
+|---|---|
+| Phytosanitary certificate requirement generated from verified rule | Regulations |
+| Certificate TradeDocument created/ingested | Trade Docs |
+| Immutable DocumentVersion established | Trade Docs |
+| Issuer claim captured | Trade Docs |
+| Issuer/document verification facts produced | Trade Docs |
+| Requirement-satisfaction evaluation cites exact version | Regulations |
+| Expired version yields correct reassessment | Regulations |
+| Superseded version preserves historical replay | Both by reference |
+| AfCFTA proof requirement distinct from ICO certificate requirement | Regulations |
+| Two concrete origin-document types remain distinct | Trade Docs |
+| Missing preference proof falls back according to rule rather than prohibiting automatically | Regulations |
+| Import permit requirement determined from commodity/origin/use/time | Regulations |
+| Permit documentary representation versioned | Trade Docs |
+| Permit revocation/expiry triggers reassessment | Cross-engine |
+| Customs declaration requirement determined | Regulations |
+| CustomsDeclaration workflow/submission managed | Trade Docs |
+| Authority acknowledgement/rejection captured | Trade Docs |
+| Sovereign release not manufactured by either engine | Architecture invariant |
+| Shipment hold/release action remains Trade/TMS-owned | Trade/TMS |
+| Duty/VAT accounting remains ERP/Ledger-owned | ERP/Ledger |
+| Pulse can analyse events without entering the synchronous critical path | Pulse |
+
+---
+
+# 1AB. Revised Realistic ZuriBeans Flow
+
+~~~mermaid
+sequenceDiagram
+    participant T as ZuriBeans / Trade
+    participant CP as Control Plane
+    participant R as Regulations
+    participant D as Trade Docs
+    participant A as Customs / Issuers
+    participant ERP as ERP / Ledger
+
+    T->>CP: resolve UG→ZA context + capabilities
+    CP-->>T: trusted PlatformContext
+
+    T->>R: shipment/product/value/route facts
+    R->>R: classify + origin + SPS + tariff + requirements
+    R-->>T: pre-flight RegulatoryDecision
+    R-->>D: document/permit requirement references
+
+    D->>A: obtain / submit / query where authorised
+    A-->>D: issued document / acknowledgement / authority response
+    D->>D: version + provenance + documentary verification
+    D-->>R: document/version/verification references
+
+    R->>R: evaluate documentary sufficiency
+    R-->>T: refreshed RegulatoryDecision
+    R-->>ERP: duty/VAT assessment where applicable
+    T->>T: enforce shipment disposition
+~~~
+
+---
+
+# 1AC. Updated Final Cross-Border Mental Model
+
+~~~text
+COMMERCIAL / SHIPMENT FACTS
+          │
+          ▼
+      REGULATIONS
+ classification / origin /
+ tariff / SPS / requirements
+          │
+          ├──────────────┐
+          │              │
+          ▼              ▼
+ DocumentRequirement   PermitRequirement
+          │              │
+          └──────┬───────┘
+                 ▼
+           TRADE DOCS
+ document / version / dossier /
+ declaration / submission /
+ authority response
+                 │
+                 ▼
+           documentary facts
+                 │
+                 ▼
+           REGULATIONS
+ requirement satisfaction /
+ cross-border decision
+                 │
+        ┌────────┼─────────┐
+        ▼        ▼         ▼
+      Trade     ERP       Pulse
+      PEP    accounting  intelligence
+~~~
+
+The documentary principle is:
+
+> **Regulations decides what documentary proof is legally required and whether the proof supplied is sufficient; Trade Docs owns the concrete documentary and Customs-workflow state used to answer that question.**
 
 ---
 
@@ -699,27 +1642,33 @@ Quality Certificate.
 
 # 25. Documentary Purpose Must Be Explicit
 
-Every regulatory document SHALL identify:
+> **RTD-03 amendment:** Regulations owns the regulatory purpose and criteria below. The concrete TradeDocument / DocumentVersion that carries these facts is owned by Trade Docs.
+
+Every **DocumentRequirement and RegulatoryEvidenceAssessment** SHALL identify, where material:
 
 ```text
-document_type
+required document type / purpose
 
 legal purpose
 
-issuer
+acceptable issuer criteria
 
 subject
 
-consignment
+consignment scope
 
-validity
+regulatory validity criteria
 
 jurisdiction
 
 regime
 
-evidence relationships.
+evidence relationships
+
+legal basis.
 ```
+
+Trade Docs SHALL preserve the concrete document's issuer claim, version, lifecycle and documentary verification facts.
 
 ---
 
@@ -2130,14 +3079,69 @@ dates.
 
 ---
 
+
+# 96A. Trade Docs Integration — RTD-03
+
+Baobab Trade Docs supplies documentary and Customs-workflow facts such as:
+
+~~~text
+TradeDocument reference
+DocumentVersion reference
+document type
+issuer claim
+issuer verification facts
+issued / expiry / revocation facts
+consignment association
+document dossier
+CustomsCase reference
+CustomsDeclaration workflow reference
+submission reference
+authority-response reference
+~~~
+
+Regulations consumes those facts to determine:
+
+~~~text
+DocumentRequirement satisfaction
+PermitRequirement satisfaction
+OriginEvidenceStatus
+SPS evidence sufficiency
+Customs documentary readiness
+RegulatoryDecision
+~~~
+
+Trade Docs SHALL not calculate legal applicability merely because it stores the document.
+
+Regulations SHALL not create or mutate the TradeDocument lifecycle merely because it evaluates the document.
+
+---
+
+# 96B. Requirement-to-Document Choreography
+
+~~~mermaid
+sequenceDiagram
+    participant R as Regulations
+    participant D as Trade Docs
+
+    R-->>D: DocumentRequirement / PermitRequirement
+    D->>D: obtain/create/version/verify document
+    D-->>R: DocumentVersion + verification facts
+    R->>R: evaluate legal sufficiency
+    R-->>D: requirement-satisfaction / decision reference where workflow needs it
+~~~
+
+---
+
 # 97. Regulations Returns
+
+Regulations returns **normative decisions and requirements**, not concrete document instances.
 
 ```text
 classification decision
 
-required documents
+DocumentRequirement references/specifications
 
-permits
+PermitRequirement references/specifications
 
 origin status
 
@@ -2147,8 +3151,12 @@ tariff assessment
 
 tax assessment
 
+requirement-satisfaction results
+
 release-readiness recommendation.
 ```
+
+Concrete TradeDocument / DocumentVersion objects are resolved from Trade Docs.
 
 ---
 
@@ -2790,6 +3798,25 @@ A fully tested tariff engine does not make an incomplete SPS engine safe.
 | `REG-XBT-I33` | Current tariff examples SHALL be pinned to their legal-effective schedule |
 | `REG-XBT-I34` | Historical transactions SHALL remain replayable against historical tariffs/rules |
 | `REG-XBT-I35` | Regulatory documents SHALL be typed by legal purpose, not filename |
+| `REG-XBT-I36` | DocumentRequirement SHALL remain distinct from TradeDocument |
+| `REG-XBT-I37` | Concrete trade-document identity/version SHALL be owned by Trade Docs |
+| `REG-XBT-I38` | Regulations SHALL own documentary requirement semantics and satisfaction decisions |
+| `REG-XBT-I39` | Trade Docs verification SHALL not automatically establish regulatory sufficiency |
+| `REG-XBT-I40` | CustomsDeclaration workflow SHALL remain distinct from declaration regulatory requirements |
+| `REG-XBT-I41` | External Customs acceptance/release SHALL remain sovereign authority facts |
+| `REG-XBT-I42` | Permit requirement SHALL remain distinct from permit document representation |
+| `REG-XBT-I43` | Exporter regulatory standing SHALL remain distinct from licence document storage |
+| `REG-XBT-I44` | Material document-version changes SHALL be capable of triggering regulatory reassessment |
+| `REG-XBT-I45` | Historical decisions SHALL retain the exact document versions used |
+| `REG-XBT-I46` | Cross-engine documentary references SHALL retain owner identity |
+| `REG-XBT-I47` | ExternalReference SHALL not substitute for a Baobab cross-engine canonical object reference |
+| `REG-XBT-I48` | Trade Docs unavailability SHALL not be interpreted as documentary absence |
+| `REG-XBT-I49` | Regulations unavailability SHALL not be interpreted as legal prohibition |
+| `REG-XBT-I50` | No Regulations-to-Trade-Docs direct database dependency is permitted |
+| `REG-XBT-I51` | No jurisdiction-specific legal requirement logic SHALL be hidden in a generic Trade Docs document-type registry |
+| `REG-XBT-I52` | Regulatory document families SHALL describe legal purpose, not imply lifecycle ownership |
+| `REG-XBT-I53` | A Customs authority response record SHALL preserve the external authority as the source of legal effect |
+| `REG-XBT-I54` | Pulse SHALL remain outside the synchronous Regulations ↔ Trade Docs satisfaction path by default |
 
 ---
 
@@ -2865,6 +3892,15 @@ Origin domain
         │
         ▼
 Document-requirement domain
+        │
+        ▼
+Shared TradeDocument / cross-engine reference contracts
+        │
+        ▼
+Trade Docs document + Customs workflow integration
+        │
+        ▼
+Requirement-satisfaction integration
         │
         ▼
 SPS domain
@@ -2958,15 +3994,23 @@ AfCFTA origin certificate type
 
 non-preferential origin certificate type
 
-commercial invoice
+DocumentRequirement for commercial invoice
 
-packing list
+DocumentRequirement for packing list
 
-transport document
+DocumentRequirement for transport document
 
-Uganda export declaration
+DocumentRequirement for Uganda export declaration
 
-South African import declaration
+DocumentRequirement for South African import declaration
+
+Trade Docs TradeDocument references for each required family
+
+immutable DocumentVersion references
+
+issuer/document verification facts
+
+requirement-satisfaction evaluation against exact document versions
 
 South African importer registration
 
@@ -3053,7 +4097,7 @@ Regulations
        │
        ├── evaluate AfCFTA
        │
-       ├── determine export docs
+       ├── determine export document requirements
        │
        ├── determine phytosanitary rules
        │
@@ -3067,7 +4111,21 @@ Regulations
        │
        ├── calculate import VAT
        │
-       └── verify documents
+       └── emit document / permit requirements
+       │
+       ▼
+Trade Docs
+       │
+       ├── obtain / associate documents
+       ├── version them
+       ├── preserve issuer/provenance
+       ├── verify documentary properties
+       └── return document-version references
+       │
+       ▼
+Regulations
+       │
+       └── evaluate requirement satisfaction
        │
        ▼
 RegulatoryDecision
@@ -3274,11 +4332,30 @@ The final semantic architecture is:
                   Duties / VAT / Charges
                             │
                             ▼
+                  Document Requirements
+                            │
+                            ▼
+                         Trade Docs
+                  documents / versions /
+                  Customs workflow state
+                            │
+                            ▼
+              Requirement Satisfaction
+                            │
+                            ▼
                   Regulatory Decision
                             │
                             ▼
                          Trade PEP
 ```
+
+The documentary principle is:
+
+> **Regulations determines which documents, permits and evidence are legally required and whether the supplied documentary facts satisfy those requirements. Trade Docs owns the concrete TradeDocument, DocumentVersion, dossier, declaration, submission and authority-response lifecycle.**
+
+The Customs-workflow principle is:
+
+> **Regulations may determine regulatory readiness, but only the competent Customs authority can exercise sovereign Customs authority, and Trade Docs merely preserves and executes the documentary workflow around that authority.**
 
 The classification principle is:
 
