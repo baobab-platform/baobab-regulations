@@ -1645,27 +1645,33 @@ Quality Certificate.
 
 # 25. Documentary Purpose Must Be Explicit
 
-Every regulatory document SHALL identify:
+> **RTD-03 amendment:** Regulations owns the regulatory purpose and criteria below. The concrete TradeDocument / DocumentVersion that carries these facts is owned by Trade Docs.
+
+Every **DocumentRequirement and RegulatoryEvidenceAssessment** SHALL identify, where material:
 
 ```text
-document_type
+required document type / purpose
 
 legal purpose
 
-issuer
+acceptable issuer criteria
 
 subject
 
-consignment
+consignment scope
 
-validity
+regulatory validity criteria
 
 jurisdiction
 
 regime
 
-evidence relationships.
+evidence relationships
+
+legal basis.
 ```
+
+Trade Docs SHALL preserve the concrete document's issuer claim, version, lifecycle and documentary verification facts.
 
 ---
 
@@ -3076,14 +3082,69 @@ dates.
 
 ---
 
+
+# 96A. Trade Docs Integration — RTD-03
+
+Baobab Trade Docs supplies documentary and Customs-workflow facts such as:
+
+~~~text
+TradeDocument reference
+DocumentVersion reference
+document type
+issuer claim
+issuer verification facts
+issued / expiry / revocation facts
+consignment association
+document dossier
+CustomsCase reference
+CustomsDeclaration workflow reference
+submission reference
+authority-response reference
+~~~
+
+Regulations consumes those facts to determine:
+
+~~~text
+DocumentRequirement satisfaction
+PermitRequirement satisfaction
+OriginEvidenceStatus
+SPS evidence sufficiency
+Customs documentary readiness
+RegulatoryDecision
+~~~
+
+Trade Docs SHALL not calculate legal applicability merely because it stores the document.
+
+Regulations SHALL not create or mutate the TradeDocument lifecycle merely because it evaluates the document.
+
+---
+
+# 96B. Requirement-to-Document Choreography
+
+~~~mermaid
+sequenceDiagram
+    participant R as Regulations
+    participant D as Trade Docs
+
+    R-->>D: DocumentRequirement / PermitRequirement
+    D->>D: obtain/create/version/verify document
+    D-->>R: DocumentVersion + verification facts
+    R->>R: evaluate legal sufficiency
+    R-->>D: requirement-satisfaction / decision reference where workflow needs it
+~~~
+
+---
+
 # 97. Regulations Returns
+
+Regulations returns **normative decisions and requirements**, not concrete document instances.
 
 ```text
 classification decision
 
-required documents
+DocumentRequirement references/specifications
 
-permits
+PermitRequirement references/specifications
 
 origin status
 
@@ -3093,8 +3154,12 @@ tariff assessment
 
 tax assessment
 
+requirement-satisfaction results
+
 release-readiness recommendation.
 ```
+
+Concrete TradeDocument / DocumentVersion objects are resolved from Trade Docs.
 
 ---
 
@@ -3736,6 +3801,25 @@ A fully tested tariff engine does not make an incomplete SPS engine safe.
 | `REG-XBT-I33` | Current tariff examples SHALL be pinned to their legal-effective schedule |
 | `REG-XBT-I34` | Historical transactions SHALL remain replayable against historical tariffs/rules |
 | `REG-XBT-I35` | Regulatory documents SHALL be typed by legal purpose, not filename |
+| `REG-XBT-I36` | DocumentRequirement SHALL remain distinct from TradeDocument |
+| `REG-XBT-I37` | Concrete trade-document identity/version SHALL be owned by Trade Docs |
+| `REG-XBT-I38` | Regulations SHALL own documentary requirement semantics and satisfaction decisions |
+| `REG-XBT-I39` | Trade Docs verification SHALL not automatically establish regulatory sufficiency |
+| `REG-XBT-I40` | CustomsDeclaration workflow SHALL remain distinct from declaration regulatory requirements |
+| `REG-XBT-I41` | External Customs acceptance/release SHALL remain sovereign authority facts |
+| `REG-XBT-I42` | Permit requirement SHALL remain distinct from permit document representation |
+| `REG-XBT-I43` | Exporter regulatory standing SHALL remain distinct from licence document storage |
+| `REG-XBT-I44` | Material document-version changes SHALL be capable of triggering regulatory reassessment |
+| `REG-XBT-I45` | Historical decisions SHALL retain the exact document versions used |
+| `REG-XBT-I46` | Cross-engine documentary references SHALL retain owner identity |
+| `REG-XBT-I47` | ExternalReference SHALL not substitute for a Baobab cross-engine canonical object reference |
+| `REG-XBT-I48` | Trade Docs unavailability SHALL not be interpreted as documentary absence |
+| `REG-XBT-I49` | Regulations unavailability SHALL not be interpreted as legal prohibition |
+| `REG-XBT-I50` | No Regulations-to-Trade-Docs direct database dependency is permitted |
+| `REG-XBT-I51` | No jurisdiction-specific legal requirement logic SHALL be hidden in a generic Trade Docs document-type registry |
+| `REG-XBT-I52` | Regulatory document families SHALL describe legal purpose, not imply lifecycle ownership |
+| `REG-XBT-I53` | A Customs authority response record SHALL preserve the external authority as the source of legal effect |
+| `REG-XBT-I54` | Pulse SHALL remain outside the synchronous Regulations ↔ Trade Docs satisfaction path by default |
 
 ---
 
@@ -3811,6 +3895,15 @@ Origin domain
         │
         ▼
 Document-requirement domain
+        │
+        ▼
+Shared TradeDocument / cross-engine reference contracts
+        │
+        ▼
+Trade Docs document + Customs workflow integration
+        │
+        ▼
+Requirement-satisfaction integration
         │
         ▼
 SPS domain
@@ -3904,15 +3997,23 @@ AfCFTA origin certificate type
 
 non-preferential origin certificate type
 
-commercial invoice
+DocumentRequirement for commercial invoice
 
-packing list
+DocumentRequirement for packing list
 
-transport document
+DocumentRequirement for transport document
 
-Uganda export declaration
+DocumentRequirement for Uganda export declaration
 
-South African import declaration
+DocumentRequirement for South African import declaration
+
+Trade Docs TradeDocument references for each required family
+
+immutable DocumentVersion references
+
+issuer/document verification facts
+
+requirement-satisfaction evaluation against exact document versions
 
 South African importer registration
 
@@ -3999,7 +4100,7 @@ Regulations
        │
        ├── evaluate AfCFTA
        │
-       ├── determine export docs
+       ├── determine export document requirements
        │
        ├── determine phytosanitary rules
        │
@@ -4013,7 +4114,21 @@ Regulations
        │
        ├── calculate import VAT
        │
-       └── verify documents
+       └── emit document / permit requirements
+       │
+       ▼
+Trade Docs
+       │
+       ├── obtain / associate documents
+       ├── version them
+       ├── preserve issuer/provenance
+       ├── verify documentary properties
+       └── return document-version references
+       │
+       ▼
+Regulations
+       │
+       └── evaluate requirement satisfaction
        │
        ▼
 RegulatoryDecision
@@ -4220,11 +4335,30 @@ The final semantic architecture is:
                   Duties / VAT / Charges
                             │
                             ▼
+                  Document Requirements
+                            │
+                            ▼
+                         Trade Docs
+                  documents / versions /
+                  Customs workflow state
+                            │
+                            ▼
+              Requirement Satisfaction
+                            │
+                            ▼
                   Regulatory Decision
                             │
                             ▼
                          Trade PEP
 ```
+
+The documentary principle is:
+
+> **Regulations determines which documents, permits and evidence are legally required and whether the supplied documentary facts satisfy those requirements. Trade Docs owns the concrete TradeDocument, DocumentVersion, dossier, declaration, submission and authority-response lifecycle.**
+
+The Customs-workflow principle is:
+
+> **Regulations may determine regulatory readiness, but only the competent Customs authority can exercise sovereign Customs authority, and Trade Docs merely preserves and executes the documentary workflow around that authority.**
 
 The classification principle is:
 
