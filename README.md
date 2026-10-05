@@ -1054,6 +1054,40 @@ sequenceDiagram
 
 Only the competent external authority gives a permit, certificate, Customs assessment or release its sovereign legal effect.
 
+
+RTD-06 now makes this exchange executable through the Shared package:
+
+~~~text
+baobab-platform/shared/contracts/regulatory-document-exchange/v1
+~~~
+
+The canonical synchronous Regulations surfaces are:
+
+~~~text
+POST /v1/documentary-requirements/resolve
+
+POST /v1/documentary-evidence/assessments
+~~~
+
+Trade Docs supplies bounded document facts for exact pinned DocumentVersions through:
+
+~~~text
+POST /v1/regulatory-document-evidence/resolve
+~~~
+
+The assessment request does **not** let Trade Docs choose legal time or knowledge time. Those remain Regulations-owned semantics associated with the pinned requirement/decision.
+
+RTD-06 also defines, but deliberately does not activate, the future event facts:
+
+~~~text
+com.baobab-platform.regulations.document-requirements.determined.v1
+
+com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
+~~~
+
+The local REG-1 v0 evaluation events remain draft audit schemas and are not the cross-engine production contract.
+
+
 ---
 
 # Integration with Baobab Pulse
