@@ -8,10 +8,192 @@
 **Target Repository:** `baobab-platform/baobab-regulations`  
 **Cross-Repository Contract Target:** `baobab-platform/shared`  
 **Date:** 2026-09-29  
+**Amended:** 2026-10-05 — RTD-06 under ADR-SHARED-022; canonical cross-engine event naming and Regulations ↔ Trade Docs documentary exchange reconciled  
+**Cross-Engine Authority:** ADR-SHARED-019, ADR-SHARED-021, ADR-SHARED-022  
 **Decision Type:** Events / Messaging / Subscriptions / Notifications / Integration / Delivery / Replay  
 **Strategic Classification:** Core Platform Integration Infrastructure
 
 ---
+
+# RTD-06 Normative Amendment — Regulations ↔ Trade Docs Exchange
+
+This amendment is normative for cross-engine documentary integration.
+
+ADR-SHARED-022 now governs the executable Regulations ↔ Trade Docs wire boundary.
+
+The local event architecture in this ADR remains valid for Regulations-owned publication mechanics, but the following cross-engine rules now apply.
+
+## A. Canonical event naming
+
+Earlier examples in this ADR used:
+
+~~~text
+io.baobab.regulations.*
+~~~
+
+Those examples are superseded for platform wire contracts.
+
+Canonical Shared naming is:
+
+~~~text
+com.baobab-platform.<context>.<fact>.vN
+~~~
+
+under ADR-SHARED-008 and ADR-SHARED-018.
+
+For RTD-06 the defined but not-yet-activated Regulations facts are:
+
+~~~text
+com.baobab-platform.regulations.document-requirements.determined.v1
+
+com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
+~~~
+
+The Trade Docs fact relevant to Regulations is:
+
+~~~text
+com.baobab-platform.documents.regulatory-evidence.offered.v1
+~~~
+
+## B. Event activation remains deferred
+
+RTD-06 defines payload semantics but does not activate these events.
+
+~~~text
+RTD-07
+    activates documents producer/steward path
+
+RTD-08
+    activates regulations context/platform event contracts
+~~~
+
+Until those gates land, these names SHALL NOT be published as canonical platform events.
+
+## C. Assessment is a command, not an event
+
+The canonical assessment request is:
+
+~~~text
+POST /v1/documentary-evidence/assessments
+~~~
+
+It SHALL NOT be disguised as:
+
+~~~text
+PleaseAssessDocumentEvidence event
+~~~
+
+The eventual:
+
+~~~text
+requirement-satisfaction.evaluated
+~~~
+
+event records the committed Regulations fact after assessment.
+
+## D. Requirements are Regulations-owned
+
+Regulations publishes/serves pinned:
+
+~~~text
+DocumentRequirement
+PermitRequirement
+EvidenceRequirement
+RegulatoryDecision
+~~~
+
+through RTD-05 references and RTD-06 projections.
+
+Trade Docs SHALL NOT reinterpret or mutate those requirements.
+
+## E. Documentary facts are Trade Docs-owned
+
+Trade Docs supplies:
+
+~~~text
+DocumentVersion reference
+document type/family
+issuer claim
+verification snapshot
+temporal-validity snapshot
+subject references
+documentary assertions
+content-artifact references
+~~~
+
+Regulations consumes those facts and decides legal sufficiency.
+
+## F. Verification is not satisfaction
+
+~~~text
+Trade Docs:
+VERIFIED + CURRENTLY_VALID
+
+does not imply
+
+Regulations:
+SATISFIED
+~~~
+
+Wrong consignment, commodity, issuer, jurisdiction, regime or required data can still make evidence insufficient.
+
+## G. Assertion provenance must survive
+
+Documentary values SHALL retain whether they were:
+
+~~~text
+ISSUER_ASSERTED
+BAOBAB_EXTRACTED
+BAOBAB_GENERATED
+EXTERNAL_NORMALIZED
+~~~
+
+An extracted/OCR value does not silently become an issuer assertion.
+
+## H. Legal time is owner-controlled
+
+Trade Docs does not supply legal_time or knowledge_time in the evidence-assessment command.
+
+Those remain Regulations-owned and are derived from the pinned requirement/decision context.
+
+## I. Local v0 events remain local draft
+
+The repository-local:
+
+~~~text
+regulations.evaluation.requested.v0
+regulations.evaluation.completed.v0
+~~~
+
+remain draft audit schemas.
+
+They SHALL NOT be promoted as canonical cross-engine contracts merely by copying them into Shared.
+
+## J. Existing document events are triggers, not decisions
+
+Once Trade Docs events are activated, Regulations may consume:
+
+~~~text
+document-version.verification-changed.v2
+document-version.validity-changed.v2
+~~~
+
+to detect material evidence changes.
+
+Regulations still decides whether reassessment is required and what legal result follows.
+
+## K. Historical replay
+
+Consequential documentary assessment SHALL preserve exact pinned requirement, decision and DocumentVersion references.
+
+A missing historical version SHALL NOT be replaced by the current version.
+
+## L. Tenant/context consistency
+
+All tenant-scoped references in RTD-06 operations SHALL match the tenant obtained from trusted Control Plane context.
+
+Reference possession does not grant access.
+
 
 # 1. Executive Decision
 
@@ -424,25 +606,31 @@ remains valid.
 
 # 20. Event Naming
 
-Baobab SHOULD use versioned canonical event types such as:
+> **RTD-06 amendment:** canonical platform wire names use ADR-SHARED-018's
+> `com.baobab-platform.<context>.<fact>.vN` convention. The older
+> `io.baobab.regulations.*` examples are superseded.
+
+Examples of the canonical form include:
 
 ```text
-io.baobab.regulations.change.verified.v1
+com.baobab-platform.regulations.change.verified.v1
 
-io.baobab.regulations.change.future-effective.v1
+com.baobab-platform.regulations.reassessment.required.v1
 
-io.baobab.regulations.impact.confirmed.v1
+com.baobab-platform.regulations.decision.issued.v1
 
-io.baobab.regulations.reassessment.required.v1
-
-io.baobab.regulations.decision.issued.v1
-
-io.baobab.regulations.decision.superseded.v1
-
-io.baobab.regulations.requirement.changed.v1
-
-io.baobab.regulations.runtime.stale.v1
+com.baobab-platform.regulations.requirement.changed.v1
 ```
+
+RTD-06 additionally defines, without activating:
+
+```text
+com.baobab-platform.regulations.document-requirements.determined.v1
+
+com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
+```
+
+Actual registration/producer activation remains governed by Shared.
 
 ---
 
