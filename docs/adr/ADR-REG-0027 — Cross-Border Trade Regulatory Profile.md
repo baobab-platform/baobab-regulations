@@ -867,29 +867,26 @@ The following interpretation is normative.
 
 # 1Y. RTD-03 Cross-Border Invariants
 
-The existing REG-XBT invariants remain valid and are extended by:
+Section 129 remains the canonical invariant register for this ADR.
 
-| ID | Invariant |
-|---|---|
-| REG-XBT-I36 | DocumentRequirement SHALL remain distinct from TradeDocument |
-| REG-XBT-I37 | Concrete trade-document identity/version SHALL be owned by Trade Docs |
-| REG-XBT-I38 | Regulations SHALL own documentary requirement semantics and satisfaction decisions |
-| REG-XBT-I39 | Trade Docs verification SHALL not automatically establish regulatory sufficiency |
-| REG-XBT-I40 | CustomsDeclaration workflow SHALL be distinct from declaration regulatory requirements |
-| REG-XBT-I41 | External Customs acceptance/release SHALL remain sovereign authority facts |
-| REG-XBT-I42 | Permit requirement SHALL remain distinct from permit document representation |
-| REG-XBT-I43 | Exporter regulatory standing SHALL remain distinct from licence document storage |
-| REG-XBT-I44 | Document-version changes SHALL be capable of triggering regulatory reassessment |
-| REG-XBT-I45 | Historical decisions SHALL retain the exact document versions used |
-| REG-XBT-I46 | Cross-engine documentary references SHALL retain owner identity |
-| REG-XBT-I47 | ExternalReference SHALL not substitute for a Baobab cross-engine canonical object reference |
-| REG-XBT-I48 | Trade Docs unavailability SHALL not be interpreted as documentary absence |
-| REG-XBT-I49 | Regulations unavailability SHALL not be interpreted as legal prohibition |
-| REG-XBT-I50 | No Regulations-to-Trade-Docs direct database dependency is permitted |
-| REG-XBT-I51 | No jurisdiction-specific legal requirement logic SHALL be hidden in a generic Trade Docs document-type registry |
-| REG-XBT-I52 | Regulatory document families SHALL describe legal purpose, not imply lifecycle ownership |
-| REG-XBT-I53 | A Customs authority response record SHALL preserve the external authority as the source of legal effect |
-| REG-XBT-I54 | Pulse SHALL not be placed synchronously between Regulations and Trade Docs for requirement satisfaction |
+RTD-03 extends that register with REG-XBT-I36 through REG-XBT-I54. Those added invariants cover:
+
+- requirement/document separation;
+- Trade Docs ownership of concrete document identity and version;
+- Regulations ownership of documentary sufficiency;
+- Customs declaration workflow separation;
+- sovereign Customs authority;
+- permit/licence separation;
+- document-version-driven reassessment;
+- historical replay;
+- cross-engine reference ownership;
+- explicit unavailable/unknown semantics;
+- prohibition of direct Regulations ↔ Trade Docs database coupling;
+- prohibition of hidden regulatory logic in Trade Docs type registries;
+- preservation of external authority provenance;
+- exclusion of Pulse from the synchronous satisfaction path.
+
+The normative wording of each invariant is maintained in §129 to avoid duplicate invariant definitions.
 
 ---
 
