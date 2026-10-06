@@ -8,8 +8,8 @@
 **Target Repository:** `baobab-platform/baobab-regulations`  
 **Cross-Repository Contract Target:** `baobab-platform/shared`  
 **Date:** 2026-09-29  
-**Amended:** 2026-10-05 — RTD-06 under ADR-SHARED-022; canonical cross-engine event naming and Regulations ↔ Trade Docs documentary exchange reconciled  
-**Cross-Engine Authority:** ADR-SHARED-019, ADR-SHARED-021, ADR-SHARED-022  
+**Amended:** 2026-10-06 — RTD-06/RTD-08 under ADR-SHARED-022/024; canonical cross-engine naming, Regulations ↔ Trade Docs exchange, `regulations` namespace, event-context stewardship and producer activation reconciled  
+**Cross-Engine Authority:** ADR-SHARED-019, ADR-SHARED-021, ADR-SHARED-022, ADR-SHARED-024  
 **Decision Type:** Events / Messaging / Subscriptions / Notifications / Integration / Delivery / Replay  
 **Strategic Classification:** Core Platform Integration Infrastructure
 
@@ -41,7 +41,7 @@ com.baobab-platform.<context>.<fact>.vN
 
 under ADR-SHARED-008 and ADR-SHARED-018.
 
-For RTD-06 the defined but not-yet-activated Regulations facts are:
+For RTD-06 the canonical Regulations facts are:
 
 ~~~text
 com.baobab-platform.regulations.document-requirements.determined.v1
@@ -55,19 +55,26 @@ The Trade Docs fact relevant to Regulations is:
 com.baobab-platform.documents.regulatory-evidence.offered.v1
 ~~~
 
-## B. Event activation remains deferred
+## B. RTD-08 activation state
 
-RTD-06 defines payload semantics but does not activate these events.
+ADR-SHARED-024 / RTD-08 now activates the Shared `regulations` event context
+with `baobab-regulations` as steward/producer for:
 
 ~~~text
-RTD-07
-    activates documents producer/steward path
+com.baobab-platform.regulations.document-requirements.determined.v1
 
-RTD-08
-    activates regulations context/platform event contracts
+com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
 ~~~
 
-Until those gates land, these names SHALL NOT be published as canonical platform events.
+Their canonical AsyncAPI publication surface is:
+
+~~~text
+baobab-platform/shared/contracts/regulatory-document-assessment/v1/asyncapi.yaml
+~~~
+
+This activation is narrow. The wider illustrative event taxonomy in this ADR
+remains non-canonical until each event has an explicit Shared payload contract
+and registration.
 
 ## C. Assessment is a command, not an event
 
@@ -622,7 +629,7 @@ com.baobab-platform.regulations.decision.issued.v1
 com.baobab-platform.regulations.requirement.changed.v1
 ```
 
-RTD-06 additionally defines, without activating:
+RTD-06 defines and ADR-SHARED-024 / RTD-08 now activates:
 
 ```text
 com.baobab-platform.regulations.document-requirements.determined.v1
@@ -630,7 +637,10 @@ com.baobab-platform.regulations.document-requirements.determined.v1
 com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
 ```
 
-Actual registration/producer activation remains governed by Shared.
+Both are ACTIVE in Shared with `baobab-regulations` as producer.
+
+Other examples in this section remain illustrative until canonical Shared
+schemas and registrations are approved.
 
 ---
 
