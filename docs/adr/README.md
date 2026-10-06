@@ -10,6 +10,7 @@ Platform-wide and cross-engine authority decisions remain governed by `baobab-pl
 - **ADR-SHARED-021 — Canonical Cross-Engine Object Reference** governs portable owner/type/id/version references used by Regulations.
 - **ADR-SHARED-022 — Regulations ↔ Trade Docs Documentary Requirement, Evidence and Reassessment Exchange** governs the executable RTD-06 requirement/evidence choreography and supersedes local cross-engine wire assumptions.
 - **ADR-SHARED-024 — Regulations Capability Namespace, Event Context Stewardship and Producer Activation** resolves G-REG-NS, registers the canonical `regulations` capability domain, activates the `regulations` event context, and assigns the two RTD-08 event types to `baobab-regulations`.
+- **ADR-SHARED-027 — Regulations Capability Census and First Canonical Capability Tranche** contracts `regulations.requirement.resolve` and `regulations.evidence.assess` as DRAFT canonical capabilities without provider support.
 - **ADR-PULSE-012** reconciles Pulse's regulatory/customs intelligence semantics with that boundary.
 - **ADR-TDOC-0001 / ADR-TDOC-0002** define Trade Docs mission and canonical TradeDocument/DocumentVersion ownership.
 - **ADR-REG-0026 / ADR-REG-0027** were amended on 2026-10-05 under RTD-03 to conform to those decisions.
@@ -69,6 +70,7 @@ Pulse
 | ADR-REG-0028 | Multi-Tenancy, Isolation, Security, Audit and Regulatory Data Residency |
 | ADR-REG-0029 | Jurisdiction Packs, Regulatory Modules, Coverage Model and Regulatory Marketplace Architecture |
 | ADR-REG-0030 | Commercial Product Model, Entitlements, Metering, SLA and Regulatory Service Packaging |
+| ADR-REG-0031 | Regulations Capability Census, Contracted Surface and Provider-Implementation Boundary |
 
 ## Governance rule
 
