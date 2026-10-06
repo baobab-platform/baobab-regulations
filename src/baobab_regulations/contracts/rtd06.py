@@ -12,6 +12,7 @@ not a second canonical contract and they do not broaden Regulations authority.
 
 from datetime import datetime
 from typing import Annotated, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -166,7 +167,7 @@ class RequirementResolveRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    context_id: Annotated[str, Field(pattern=r"^[0-9a-fA-F-]{36}$")]
+    context_id: UUID
     requirement_reference: RegulatoryRequirementReference
 
 
