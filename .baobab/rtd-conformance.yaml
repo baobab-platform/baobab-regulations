@@ -20,6 +20,7 @@ evidence:
   adr_paths:
     - docs/adr/ADR-REG-0026 — Baobab Platform Integration and Canonical Context Boundary.md
     - docs/adr/ADR-REG-0027 — Cross-Border Trade Regulatory Profile.md
+    - docs/adr/ADR-REG-0031 — Regulations Capability Census, Contracted Surface and Provider-Implementation Boundary.md
   source_paths:
     - src/baobab_regulations/domain/decisions/models.py
     - .baobab/capability-provider.yaml
