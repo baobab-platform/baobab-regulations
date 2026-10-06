@@ -17,11 +17,14 @@
 #   - EA-09 owns certification (no certified field here).
 #
 # Catalogue status (2026-10-06):
-#   ADR-SHARED-024 / RTD-08 registers the canonical regulations namespace.
-#   No regulations.* capability key is catalogued by that decision. All entries
-#   below remain proposed_key only. Promote to capability_key +
-#   CONTRACTED/IMPLEMENTED only after Shared catalogue contracts and
-#   implementation evidence are proven.
+#   ADR-SHARED-027 completes the first Regulations capability census.
+#   Two narrow RTD-06 capabilities are now canonical but remain DRAFT and
+#   unimplemented by this engine:
+#     regulations.requirement.resolve
+#     regulations.evidence.assess
+#   They therefore appear below as capability_key + CONTRACTED only.
+#   The broader Regulations capabilities remain proposed_key + PROPOSED.
+#   No providers[].support entry is justified yet.
 #
 # Validate (with a Shared checkout):
 #   python3 <shared>/scripts/capability_catalogue.py validate-declaration \
@@ -35,11 +38,34 @@ engine:
   # Repository name as engine identity (ADR-SHARED-012).
   engine_id: baobab-regulations
 
-# No providers[] until a catalogued regulations.* capability is proven against
-# a canonical Shared contract. The offline reference evaluator is an internal
-# scaffold tool, not a declared CapabilityProvider.
+# No providers[] yet. Shared now has two contracted Regulations capabilities,
+# but this repository does not implement their canonical request/response
+# contracts. The offline ReferenceEvaluator is internal scaffold evidence,
+# not a declared CapabilityProvider.
 
 planned_capabilities:
+  - capability_key: regulations.evidence.assess
+    proposal_status: CONTRACTED
+    description: >-
+      Assess bounded Trade Docs documentary facts against one pinned
+      Regulations requirement using the canonical RTD-06 Shared contract.
+      Contracted vocabulary only: no provider support is claimed yet.
+    provenance:
+      authority:
+        repository: baobab-platform/shared
+        decision: ADR-SHARED-027
+
+  - capability_key: regulations.requirement.resolve
+    proposal_status: CONTRACTED
+    description: >-
+      Resolve one exact pinned Regulations-owned documentary, permit or
+      evidence requirement projection using the canonical RTD-06 Shared
+      contract. Contracted vocabulary only: no provider support is claimed yet.
+    provenance:
+      authority:
+        repository: baobab-platform/shared
+        decision: ADR-SHARED-027
+
   - proposed_key: regulations.context.resolve
     proposal_status: PROPOSED
     description: >-

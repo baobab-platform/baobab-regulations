@@ -7,17 +7,20 @@ repository:
   maturity: DOMAIN_RUNTIME
 shared:
   repository: baobab-platform/shared
-  commit: "6e0267572edb533ce781b2a7fc6863918ca2d62e"
+  commit: "c2c2fdeaaaab42d666d9d0502824f65d504356a2"
   required_contracts:
+    - contracts/capability/v1/catalogue.yaml
     - contracts/control-plane/v1/domain.schema.json
     - contracts/cross-engine-reference/v1/domain.schema.json
     - contracts/events/v1/envelope.schema.json
+    - contracts/regulations/v1/capabilities.yaml
     - contracts/regulatory-document-exchange/v1/domain.schema.json
     - contracts/regulatory-document-exchange/v1/events.schema.json
 evidence:
   adr_paths:
     - docs/adr/ADR-REG-0026 — Baobab Platform Integration and Canonical Context Boundary.md
     - docs/adr/ADR-REG-0027 — Cross-Border Trade Regulatory Profile.md
+    - docs/adr/ADR-REG-0031 — Regulations Capability Census, Contracted Surface and Provider-Implementation Boundary.md
   source_paths:
     - src/baobab_regulations/domain/decisions/models.py
     - .baobab/capability-provider.yaml
