@@ -3,8 +3,8 @@
 > **Headless, jurisdiction-aware regulatory intelligence and deterministic regulatory decision engine for the Baobab Platform.**
 
 **Repository:** `baobab-platform/baobab-regulations`  
-**Status:** Architecture defined; implementation scaffold not yet activated  
-**Architecture:** [`docs/adr/`](docs/adr/) — ADR-REG-0001 through ADR-REG-0030  
+**Status:** Architecture established; domain/application scaffold active; canonical capability provider support not yet declared  
+**Architecture:** [`docs/adr/`](docs/adr/) — ADR-REG-0001 through ADR-REG-0031  
 **License:** Apache License 2.0
 
 ---
@@ -53,20 +53,20 @@ That distinguishes it from `baobab-pulse`, whose role is primarily intelligence 
 
 ## Current repository status
 
-The repository currently contains the complete initial **30-ADR architecture programme** for Baobab Regulations.
+The repository contains the original **30-ADR foundational architecture programme** plus ADR-REG-0031, which records the first evidence-based capability census.
 
-Application implementation has **not yet been activated**.
+Application implementation is **partially active**. The repository now contains real Python domain/application/infrastructure code, a FastAPI scaffold, deterministic reference evaluation, persistence scaffolding, migrations, tests, a real `.baobab/environment.yaml`, a real `.baobab/repository.yaml`, and an active devcontainer declaration.
 
 At present:
 
-- the 30 `ADR-REG-*` architecture decisions are present under [`docs/adr/`](docs/adr/);
-- the repository still carries portions of the Baobab engine-template scaffold;
-- `.baobab/environment.yaml` and `.baobab/repository.yaml` are still represented by `.example` files;
-- the final application runtime and devcontainer declaration have not yet been committed;
-- `contracts/` remains a placeholder for pinned `baobab-platform/shared` contract dependencies;
-- Foundation CI is only partially active and application-specific build, test, security and release workflows remain to be implemented.
+- ADR-REG-0001 through ADR-REG-0031 are present under [`docs/adr/`](docs/adr/);
+- the domain model, source model, platform-context guards, EvaluationService and offline ReferenceEvaluator are executable code;
+- the public FastAPI surface remains limited to health/readiness routes;
+- production OPA execution, Control Plane context redemption, canonical capability handlers and durable cross-engine event publication remain outstanding;
+- ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for them yet;
+- Foundation/application CI and release/deployment hardening are not yet complete.
 
-The architecture therefore describes the **target system**. Sections describing PostgreSQL, OPA, Haystack, LangGraph, Qdrant, Docling and other components are architectural decisions or intended implementation boundaries unless corresponding production code exists in this repository.
+The architecture therefore remains ahead of the runtime in several areas. PostgreSQL, OPA, Haystack, LangGraph, Qdrant, Docling and other components should be treated as implemented only where corresponding production code and tests exist.
 
 ---
 
@@ -1208,7 +1208,7 @@ This structure will evolve when implementation begins.
 
 # Architecture decision record programme
 
-The 30 foundational ADRs are stored in [`docs/adr/`](docs/adr/).
+The 30 foundational ADRs plus the post-foundation capability census ADR are stored in [`docs/adr/`](docs/adr/).
 
 | ADR range | Architecture area |
 |---|---|
@@ -1222,6 +1222,7 @@ The 30 foundational ADRs are stored in [`docs/adr/`](docs/adr/).
 | `0028` | Multi-tenancy, security, audit and residency |
 | `0029` | Jurisdiction packs, coverage and regulatory marketplace |
 | `0030` | Commercial products, entitlements, metering and SLA |
+| `0031` | Capability census, contracted surfaces and provider-readiness boundary |
 
 Implementation MUST consult the relevant ADRs before introducing domain models, APIs, persistence models, provider integrations or cross-engine contracts.
 
@@ -1281,28 +1282,9 @@ The exact gate plan should be derived from the reconciled ADR canon before appli
 
 # Development environment
 
-The repository has **not yet committed its final development-environment declaration**.
+The repository now carries real `.baobab/environment.yaml`, `.baobab/repository.yaml` and `.devcontainer/devcontainer.json` declarations.
 
-The current:
-
-```text
-.baobab/environment.yaml.example
-.baobab/repository.yaml.example
-```
-
-remain template files and must not be treated as final runtime declarations.
-
-Before implementation begins, the repository should:
-
-1. decide and document the concrete runtime stack;
-2. select the narrowest appropriate `baobab-dev` profile;
-3. pin the compatible `baobab-dev` image/version;
-4. commit real `.baobab/environment.yaml` and `.baobab/repository.yaml`;
-5. activate `.devcontainer/devcontainer.json`;
-6. activate application-specific Foundation CI;
-7. pin the required `baobab-platform/shared` contract version.
-
-Until that occurs, commands for installing, running or testing the application would be speculative and are intentionally not documented here.
+Remaining environment/repository hardening work is operational rather than template activation: Foundation application gates, full runtime/container policy, release/deployment workflows and production dependency readiness still need to be completed before go-live.
 
 ---
 
