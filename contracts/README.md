@@ -15,6 +15,7 @@ schemas locally.
 - Canonical CloudEvents envelope, idempotency and RFC 9457 problem-details.
 - `contracts/cross-engine-reference/v1` — ADR-SHARED-021 / RTD-05.
 - `contracts/regulatory-document-exchange/v1` — ADR-SHARED-022 / RTD-06.
+- `contracts/regulatory-document-assessment/v1` — ADR-SHARED-024 / RTD-08 Regulations-owned AsyncAPI publication surface.
 
 RTD-06 gives Regulations the canonical wire surfaces for:
 
@@ -51,24 +52,32 @@ EvidenceOffered != EvidenceAccepted
 RequirementSatisfaction != operational enforcement
 ```
 
-## Planned RTD-06 events
+## Active RTD-08 event authority
 
-Shared ADR-SHARED-022 defines, but does not yet activate:
+ADR-SHARED-024 / RTD-08 activates `baobab-regulations` as the canonical
+`regulations` event-context steward/producer for:
 
 ```text
 com.baobab-platform.regulations.document-requirements.determined.v1
 com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
 ```
 
-Their activation remains RTD-08.
+Their AsyncAPI surface is canonical in Shared:
 
-Regulations may later consume the Trade Docs event:
+```text
+contracts/regulatory-document-assessment/v1/asyncapi.yaml
+```
+
+Regulations may consume the RTD-07 Trade Docs fact:
 
 ```text
 com.baobab-platform.documents.regulatory-evidence.offered.v1
 ```
 
-after the documents producer path is activated by RTD-07.
+without acquiring `documents` producer authority.
+
+ACTIVE contract authority does not claim that this repository already has a
+production outbox, relay or broker deployment.
 
 ## Local draft events
 
