@@ -16,10 +16,12 @@
 #   - Control Plane owns activation, bindings, grants, health, resolution.
 #   - EA-09 owns certification (no certified field here).
 #
-# Catalogue status (2026-09-30):
-#   No regulations.* keys are catalogued in Shared yet. All entries below are
-#   proposed_key only. Promote to capability_key + CONTRACTED/IMPLEMENTED only
-#   after Shared registers the regulations namespace and contracts are proven.
+# Catalogue status (2026-10-06):
+#   ADR-SHARED-024 / RTD-08 registers the canonical regulations namespace.
+#   No regulations.* capability key is catalogued by that decision. All entries
+#   below remain proposed_key only. Promote to capability_key +
+#   CONTRACTED/IMPLEMENTED only after Shared catalogue contracts and
+#   implementation evidence are proven.
 #
 # Validate (with a Shared checkout):
 #   python3 <shared>/scripts/capability_catalogue.py validate-declaration \
