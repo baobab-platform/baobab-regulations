@@ -12,7 +12,7 @@
 **Capability Resolution Authority:** `baobab-platform/baobab-cp`  
 **Identity Authority:** Baobab IAM  
 **Operational Enforcement Authorities:** Domain-owning Baobab engines  
-**Primary Capability Namespace:** `regulations.*`  
+**Primary Capability Namespace:** `regulations.*` — registered in Shared by ADR-SHARED-024 / RTD-08; individual capability keys remain subject to catalogue/contract/provider gates  
 **Architecture Style:** Headless, capability-centric, provider-neutral, contract-first, context-resolved, event-enabled, independently deployable, multi-tenant  
 **Initial Consumption Profile:** Service-to-service regulatory assessment for cross-border trade  
 **Initial Proving Consumer:** ZuriBeans / Baobab Trade  
@@ -412,7 +412,7 @@ regulations.crossborder.evaluate
 
 These are conceptual candidate keys.
 
-Final registration SHALL occur through `baobab-platform/shared`.
+ADR-SHARED-024 / RTD-08 has registered the top-level `regulations` namespace in Shared, but it has **not** catalogued these individual keys. Final capability registration SHALL still occur through `baobab-platform/shared` after contract and implementation evidence gates are satisfied.
 
 ---
 

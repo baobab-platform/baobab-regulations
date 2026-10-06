@@ -7,6 +7,9 @@ Platform-wide and cross-engine authority decisions remain governed by `baobab-pl
 ## Cross-engine precedence relevant to Regulations
 
 - **ADR-SHARED-019 — Regulatory Intelligence, Trade Documents and Evidence Cross-Engine Boundary** is the platform authority for the Regulations ↔ Trade Docs ↔ Pulse relationship.
+- **ADR-SHARED-021 — Canonical Cross-Engine Object Reference** governs portable owner/type/id/version references used by Regulations.
+- **ADR-SHARED-022 — Regulations ↔ Trade Docs Documentary Requirement, Evidence and Reassessment Exchange** governs the executable RTD-06 requirement/evidence choreography and supersedes local cross-engine wire assumptions.
+- **ADR-SHARED-024 — Regulations Capability Namespace, Event Context Stewardship and Producer Activation** resolves G-REG-NS, registers the canonical `regulations` capability domain, activates the `regulations` event context, and assigns the two RTD-08 event types to `baobab-regulations`.
 - **ADR-PULSE-012** reconciles Pulse's regulatory/customs intelligence semantics with that boundary.
 - **ADR-TDOC-0001 / ADR-TDOC-0002** define Trade Docs mission and canonical TradeDocument/DocumentVersion ownership.
 - **ADR-REG-0026 / ADR-REG-0027** were amended on 2026-10-05 under RTD-03 to conform to those decisions.
@@ -59,7 +62,7 @@ Pulse
 | ADR-REG-0021 | AI-Assisted Regulatory Extraction and Interpretation Boundary |
 | ADR-REG-0022 | Human Verification, Confidence and Regulatory Knowledge Governance Workflow |
 | ADR-REG-0023 | Regulatory Change Detection and Impact Analysis |
-| ADR-REG-0024 | Regulatory Events, Subscriptions and Notifications |
+| ADR-REG-0024 | Regulatory Events, Subscriptions and Notifications — **cross-engine naming/surfaces amended by RTD-06 and activation reconciled by RTD-08** |
 | ADR-REG-0025 | Regulatory Testing, Golden Cases and Decision Regression Architecture |
 | ADR-REG-0026 | Baobab Platform Integration and Canonical Context Boundary — **amended by RTD-03** |
 | ADR-REG-0027 | Cross-Border Trade Regulatory Profile — **amended by RTD-03** |

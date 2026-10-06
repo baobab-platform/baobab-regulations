@@ -1,33 +1,102 @@
 # Contracts
 
-This directory holds **pinned** contract dependencies consumed or published by
+This directory documents contract dependencies consumed or published by
 `baobab-regulations`.
 
-## Consumed (from `baobab-platform/shared`)
+Canonical cross-repository contracts are governed in
+`baobab-platform/shared`. This repository must pin and consume those
+contracts when runtime implementation begins; it must not fork their wire
+schemas locally.
 
-- Platform context / organisation / legal-entity / market / trade-lane identity
-  shapes (Control Plane owns the truth; Regulations only holds references —
-  ADR-REG-0026).
-- Capability grant / binding vocabulary used to authorise Regulations access
-  (ADR-REG-0002, ADR-REG-0030).
-- Shared CloudEvents envelope and RFC 9457 problem-details profiles (when
-  event emission is activated).
+## Consumed from Shared
 
-## Published (planned)
+- Control Plane context / organisation / legal-entity / market identity.
+- Capability grant / binding vocabulary.
+- Canonical CloudEvents envelope, idempotency and RFC 9457 problem-details.
+- `contracts/cross-engine-reference/v1` — ADR-SHARED-021 / RTD-05.
+- `contracts/regulatory-document-exchange/v1` — ADR-SHARED-022 / RTD-06.
+- `contracts/regulatory-document-assessment/v1` — ADR-SHARED-024 / RTD-08 Regulations-owned AsyncAPI publication surface.
 
-- `regulations.decision.v1` — wire shape for `RegulatoryDecision`
-- `regulations.assessment.requested.v1` / `regulations.assessment.completed.v1`
+RTD-06 gives Regulations the canonical wire surfaces for:
 
-## Draft (REG-1, local only)
+```text
+RegulatoryDocumentRequirementProjection
+RegulatoryDocumentRequirementSet
+DocumentEvidenceAssessmentRequest
+DocumentEvidenceAssessmentResult
+CrossEngineObjectReference
+```
+
+and the Regulations-owned synchronous operations:
+
+```text
+POST /v1/documentary-requirements/resolve
+POST /v1/documentary-evidence/assessments
+```
+
+## Trade Docs boundary
+
+Regulations consumes Trade Docs documentary facts through pinned
+`DOCUMENT_VERSION` references and bounded `DocumentEvidenceFactBundle`
+projections.
+
+It does not consume Trade Docs tables and it does not create a competing
+TradeDocument aggregate.
+
+The key invariants are:
+
+```text
+DocumentRequirement != TradeDocument
+DocumentVerification != RequirementSatisfaction
+EvidenceOffered != EvidenceAccepted
+RequirementSatisfaction != operational enforcement
+```
+
+## Active RTD-08 event authority
+
+ADR-SHARED-024 / RTD-08 activates `baobab-regulations` as the canonical
+`regulations` event-context steward/producer for:
+
+```text
+com.baobab-platform.regulations.document-requirements.determined.v1
+com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
+```
+
+Their AsyncAPI surface is canonical in Shared:
+
+```text
+contracts/regulatory-document-assessment/v1/asyncapi.yaml
+```
+
+Regulations may consume the RTD-07 Trade Docs fact:
+
+```text
+com.baobab-platform.documents.regulatory-evidence.offered.v1
+```
+
+without acquiring `documents` producer authority.
+
+ACTIVE contract authority does not claim that this repository already has a
+production outbox, relay or broker deployment.
+
+## Local draft events
 
 Under `contracts/events/`:
 
 - `regulations.evaluation.requested.v0.json`
 - `regulations.evaluation.completed.v0.json`
 
-These are **draft** schemas for audit emission. They are not catalogued in Shared
-and must not be treated as stable public API until promoted.
+These are local REG-1 draft audit schemas.
 
-Until shared contracts are pinned, domain models under
-`src/baobab_regulations/domain/` remain the source of truth for regulatory types.
-Do not redefine Control Plane or IAM identities here.
+They are **not** canonical Shared events and RTD-06 does not promote them.
+
+New cross-engine implementation must not treat their event names or envelope
+shape as the production platform contract.
+
+## Current source of domain truth
+
+Until the runtime implements/pins the Shared contracts, domain models under
+`src/baobab_regulations/domain/` remain the local source of truth for
+Regulations-owned semantics.
+
+Do not redefine Control Plane, IAM or Trade Docs canonical identities here.
