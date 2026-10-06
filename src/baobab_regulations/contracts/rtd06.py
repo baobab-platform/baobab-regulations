@@ -11,10 +11,18 @@ not a second canonical contract and they do not broaden Regulations authority.
 """
 
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SerializerFunctionWrapHandler,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 ObjectId = Annotated[
     str,
@@ -94,6 +102,22 @@ class PinnedRegulationsReference(BaseModel):
         elif self.object_version is not None:
             raise ValueError("IDENTITY_PINNED references must not carry object_version")
         return self
+
+    @model_serializer(mode="wrap")
+    def serialize_reference(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> dict[str, object]:
+        """Honor RTD-05 conditional field presence on the wire."""
+        raw: Any = handler(self)
+        if not isinstance(raw, dict):
+            raise TypeError("reference serializer must produce an object")
+        data = cast(dict[str, object], raw)
+        if self.object_version is None:
+            data.pop("object_version", None)
+        if self.tenant_id is None:
+            data.pop("tenant_id", None)
+        return data
 
 
 class RegulatoryRequirementReference(PinnedRegulationsReference):
