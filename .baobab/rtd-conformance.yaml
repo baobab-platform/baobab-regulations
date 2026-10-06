@@ -7,11 +7,13 @@ repository:
   maturity: DOMAIN_RUNTIME
 shared:
   repository: baobab-platform/shared
-  commit: "6e0267572edb533ce781b2a7fc6863918ca2d62e"
+  commit: "c2c2fdeaaaab42d666d9d0502824f65d504356a2"
   required_contracts:
+    - contracts/capability/v1/catalogue.yaml
     - contracts/control-plane/v1/domain.schema.json
     - contracts/cross-engine-reference/v1/domain.schema.json
     - contracts/events/v1/envelope.schema.json
+    - contracts/regulations/v1/capabilities.yaml
     - contracts/regulatory-document-exchange/v1/domain.schema.json
     - contracts/regulatory-document-exchange/v1/events.schema.json
 evidence:
