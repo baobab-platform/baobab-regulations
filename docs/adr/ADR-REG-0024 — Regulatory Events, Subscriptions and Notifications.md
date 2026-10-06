@@ -4432,7 +4432,7 @@ COMMIT
 Event Relay
           │
           ▼
-io.baobab.regulations.change.verified.v1
+com.baobab-platform.regulations.change.verified.v1
           │
       ┌───┼─────────────┐
       ▼   ▼             ▼
@@ -4442,7 +4442,7 @@ io.baobab.regulations.change.verified.v1
                 affected shipment found
                          │
                          ▼
-              reassessment.required
+com.baobab-platform.regulations.reassessment.required.v1
                          │
                          ▼
                     Trade
