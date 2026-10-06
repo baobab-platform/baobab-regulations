@@ -1077,13 +1077,20 @@ POST /v1/regulatory-document-evidence/resolve
 
 The assessment request does **not** let Trade Docs choose legal time or knowledge time. Those remain Regulations-owned semantics associated with the pinned requirement/decision.
 
-RTD-06 also defines, but deliberately does not activate, the future event facts:
+RTD-08 / ADR-SHARED-024 now activates the canonical Regulations event facts:
 
 ~~~text
 com.baobab-platform.regulations.document-requirements.determined.v1
 
 com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1
 ~~~
+
+with `baobab-regulations` as producer and the Shared `regulations` context
+ACTIVE. The canonical publication surface is
+`shared/contracts/regulatory-document-assessment/v1`.
+
+RTD-08 also registers the `regulations` capability namespace, but does not
+catalogue the proposed `regulations.*` capabilities in this repository.
 
 The local REG-1 v0 evaluation events remain draft audit schemas and are not the cross-engine production contract.
 
