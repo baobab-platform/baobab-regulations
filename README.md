@@ -61,9 +61,10 @@ At present:
 
 - ADR-REG-0001 through ADR-REG-0031 are present under [`docs/adr/`](docs/adr/);
 - the domain model, source model, platform-context guards, EvaluationService and offline ReferenceEvaluator are executable code;
-- the public FastAPI surface remains limited to health/readiness routes;
-- production OPA execution, Control Plane context redemption, canonical capability handlers and durable cross-engine event publication remain outstanding;
-- ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for them yet;
+- R-CAP-01 implements the provider-neutral `regulations.requirement.resolve` application adapter against the pinned Shared RTD-06 request/response contract, including exact pinning and tenant-authority guards;
+- the public FastAPI surface remains limited to health/readiness routes; authenticated capability routing remains a later R-CAP increment;
+- production OPA execution, live Control Plane context redemption, `regulations.evidence.assess`, and durable cross-engine event publication remain outstanding;
+- ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for either capability yet;
 - Foundation/application CI and release/deployment hardening are not yet complete.
 
 The architecture therefore remains ahead of the runtime in several areas. PostgreSQL, OPA, Haystack, LangGraph, Qdrant, Docling and other components should be treated as implemented only where corresponding production code and tests exist.
