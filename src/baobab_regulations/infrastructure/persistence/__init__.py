@@ -4,6 +4,9 @@ from baobab_regulations.infrastructure.persistence.memory import (
     InMemoryDecisionRepository,
     InMemoryRuleSetRepository,
 )
+from baobab_regulations.infrastructure.persistence.requirements_memory import (
+    InMemoryRequirementRepository,
+)
 from baobab_regulations.infrastructure.persistence.sources_memory import (
     InMemorySourceRegistry,
     SourceRegistryError,
@@ -11,6 +14,7 @@ from baobab_regulations.infrastructure.persistence.sources_memory import (
 
 __all__ = [
     "InMemoryDecisionRepository",
+    "InMemoryRequirementRepository",
     "InMemoryRuleSetRepository",
     "InMemorySourceRegistry",
     "SourceRegistryError",
