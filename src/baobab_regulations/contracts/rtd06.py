@@ -81,7 +81,7 @@ class PinnedRegulationsReference(BaseModel):
     tenant_id: TenantId | None = None
 
     @model_validator(mode="after")
-    def validate_scope_and_pinning(self) -> "PinnedRegulationsReference":
+    def validate_scope_and_pinning(self) -> PinnedRegulationsReference:
         if self.scope == "tenant":
             if self.tenant_id is None:
                 raise ValueError("tenant-scoped references require tenant_id")
@@ -149,7 +149,7 @@ class RegulatoryDocumentRequirementProjection(BaseModel):
         return value
 
     @model_validator(mode="after")
-    def require_kind_reference_consistency(self) -> "RegulatoryDocumentRequirementProjection":
+    def require_kind_reference_consistency(self) -> RegulatoryDocumentRequirementProjection:
         expected_object_type = {
             "DOCUMENT": "DOCUMENT_REQUIREMENT",
             "PERMIT": "PERMIT_REQUIREMENT",
