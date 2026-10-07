@@ -26,12 +26,17 @@ evidence:
     - docs/adr/ADR-REG-0032 — First Canonical Provider Declaration, Partial Support and Activation Boundary.md
     - docs/adr/ADR-REG-0033 — Canonical Decision Evaluation Contract Adoption and R-CAP-09 Boundary.md
     - docs/adr/ADR-REG-0034 — Production Regulatory Policy Evaluator, BRIR-to-Rego Compilation and Decision Runtime.md
+    - docs/adr/ADR-REG-0035 — R-CAP-10 Provider Promotion, Evidence Admissibility and Production Acceptance.md
   source_paths:
     - src/baobab_regulations/domain/decisions/models.py
     - src/baobab_regulations/contracts/rtd06.py
     - src/baobab_regulations/contracts/decision.py
     - scripts/validate_r_cap_08.py
     - scripts/validate_r_cap_09.py
+    - scripts/validate_r_cap_10.py
+    - .baobab/r-cap-10-readiness.yaml
+    - src/baobab_regulations/infrastructure/persistence/requirements_postgres.py
+    - migrations/000006_regulatory_requirement_projections.sql
     - src/baobab_regulations/brir/models.py
     - src/baobab_regulations/brir/compiler.py
     - src/baobab_regulations/application/services/decision_evaluation.py
@@ -73,6 +78,9 @@ evidence:
     - tests/api/test_r_cap_09_decision_route.py
     - tests/integration/test_live_opa_decision_evaluation.py
     - tests/integration/test_postgres_decision_evaluation.py
+    - tests/integration/test_postgres_requirement_authority.py
+    - tests/unit/test_r_cap_10_readiness.py
+    - .github/workflows/r-cap-10-provider-acceptance.yml
     - .github/workflows/r-cap-09-production-policy-evaluator.yml
     - tests/integration/test_postgres_evidence_assessment_idempotency.py
     - tests/contract/test_rtd08_requirement_satisfaction_event.py

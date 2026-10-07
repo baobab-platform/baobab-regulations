@@ -31,9 +31,10 @@
 #   provider support may be declared once all canonical contract paths are
 #   represented. That threshold is now satisfied.
 #
-#   PARTIAL is deliberate. The repository still lacks a production requirement
-#   authority adapter, a production workload-token authenticator, deployment
-#   binding for the event publisher, EA-09 certification, and the Shared/IAM
+#   PARTIAL is deliberate. R-CAP-10 adds durable exact requirement projections,
+#   but governed source-backed ingestion/promotion, a production workload-token
+#   authenticator, deployment binding for the event publisher, EA-09
+#   certification, and the Shared/IAM
 #   baobab-regulations validator workload required for context:validate.
 #   Therefore IMPLEMENTED and runtime activation would still be overclaims.
 #
@@ -177,6 +178,15 @@ providers:
           - type: source
             path: src/baobab_regulations/api/routes.py
             description: Authenticated, context-bound canonical requirement-resolution HTTP operation.
+          - type: source
+            path: src/baobab_regulations/infrastructure/persistence/requirements_postgres.py
+            description: Durable exact-pinned requirement authority with integrity checks and tenant-scoped PostgreSQL reads.
+          - type: source
+            path: migrations/000006_regulatory_requirement_projections.sql
+            description: Immutable requirement projection persistence with historical pins, fingerprint constraints and tenant RLS.
+          - type: integration-test
+            path: tests/integration/test_postgres_requirement_authority.py
+            description: PostgreSQL historical-pin, immutability, integrity and tenant-isolation proof.
           - type: test
             path: tests/unit/test_requirement_resolution.py
             description: Exact pinning, stale/conflict, ownership and fail-closed behavior.

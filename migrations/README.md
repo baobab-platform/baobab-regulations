@@ -12,6 +12,7 @@ governance, and audit (ADR-REG-0006, ADR-REG-0015).
 | `000003_regulatory_evidence_assessments.sql` | Durable RTD-06 assessment snapshots, tenant-scoped idempotency and PostgreSQL RLS |
 | `000004_regulatory_event_outbox.sql` | Transactional RTD-08 canonical event outbox with tenant RLS, leases, retry and dead-letter state |
 | `000005_regulatory_decision_evaluations.sql` | Canonical decision request/response snapshots, command idempotency, semantic replay identity, tenant RLS and scoped/bitemporal rule-set metadata |
+| `000006_regulatory_requirement_projections.sql` | Immutable Regulations requirement projections, SHA-256 pin/content integrity, tenant RLS, append-only governed publishing |
 
 Apply against the compose database:
 
@@ -22,7 +23,8 @@ psql "postgres://baobab:baobab@localhost:5432/baobab_regulations" \
   -f migrations/000002_source_registry.sql \
   -f migrations/000003_regulatory_evidence_assessments.sql \
   -f migrations/000004_regulatory_event_outbox.sql \
-  -f migrations/000005_regulatory_decision_evaluations.sql
+  -f migrations/000005_regulatory_decision_evaluations.sql \
+  -f migrations/000006_regulatory_requirement_projections.sql
 ```
 
 Unit tests keep in-memory adapters for deterministic isolation. R-CAP-05 adds a

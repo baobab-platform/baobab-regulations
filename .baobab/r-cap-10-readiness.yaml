@@ -1,0 +1,103 @@
+# R-CAP-10 evidence register. This is not an EA-09 certificate.
+# An absent independently verified production attestation is always BLOCKED.
+schema: baobab-regulations-r-cap-10-readiness
+version: "1.0"
+programme: R-CAP-10
+provider_key: baobab-regulations.core
+contract_authority:
+  repository: baobab-platform/shared
+  revision: 1ac220728728932d560fa9edd88ec1faa32599ec
+decision: DEFER_PROMOTION
+implementation_status_ceiling: PARTIAL
+capabilities:
+  regulations.requirement.resolve:
+    locally_proven:
+      - src/baobab_regulations/application/services/requirement_resolution.py
+      - src/baobab_regulations/infrastructure/persistence/requirements_postgres.py
+      - migrations/000006_regulatory_requirement_projections.sql
+      - tests/integration/test_postgres_requirement_authority.py
+    promotion_gates:
+      - requirement_ingestion_authority
+      - resource_server_authentication
+      - identity_and_audience_allocation
+      - invocation_authorization
+  regulations.evidence.assess:
+    locally_proven:
+      - src/baobab_regulations/application/services/evidence_assessment.py
+      - src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py
+      - src/baobab_regulations/infrastructure/persistence/event_outbox_postgres.py
+      - tests/integration/test_postgres_event_outbox.py
+    promotion_gates:
+      - requirement_ingestion_authority
+      - resource_server_authentication
+      - identity_and_audience_allocation
+      - invocation_authorization
+      - event_transport_binding
+  regulations.decision.evaluate:
+    locally_proven:
+      - src/baobab_regulations/application/services/decision_evaluation.py
+      - src/baobab_regulations/brir/compiler.py
+      - src/baobab_regulations/infrastructure/opa/client.py
+      - tests/integration/test_live_opa_decision_evaluation.py
+      - tests/integration/test_postgres_decision_evaluation.py
+    promotion_gates:
+      - source_backed_regulatory_assurance
+      - signed_policy_bundle_and_trust
+      - resource_server_authentication
+      - identity_and_audience_allocation
+      - invocation_authorization
+# Repository claims alone cannot satisfy these independent authorities.
+# An attestation MUST be validated by its owner in a separate governed flow.
+external_gates:
+  requirement_ingestion_authority:
+    owner: baobab-regulations
+    state: BLOCKED
+    evidence: null
+    explanation: Source-backed reviewed and published requirements are not proven by an empty table.
+  source_backed_regulatory_assurance:
+    owner: baobab-regulations
+    state: BLOCKED
+    evidence: null
+    explanation: Regulatory legal-basis and golden-case certification are not evidenced by a test BRIR fixture.
+  signed_policy_bundle_and_trust:
+    owner: infrastructure
+    state: BLOCKED
+    evidence: null
+    explanation: No signed production bundle promotion, trust root or deployment acceptance evidence.
+  resource_server_authentication:
+    owner: baobab-iam
+    state: BLOCKED
+    evidence: null
+    explanation: No independently accepted production baobab-regulations audience verifier deployment.
+  identity_and_audience_allocation:
+    owner: baobab-iam
+    state: BLOCKED
+    evidence: null
+    explanation: Workload/validator registration and caller audience grants are not established.
+  invocation_authorization:
+    owner: baobab-cp
+    state: BLOCKED
+    evidence: null
+    explanation: Caller-bound context redemption alone is not capability resolution/grant proof.
+  event_transport_binding:
+    owner: infrastructure
+    state: BLOCKED
+    evidence: null
+    explanation: Transactional event intent exists, but production transport/ack binding is unproven.
+activation_gates:
+  ea_09_certification:
+    owner: platform-certification
+    state: BLOCKED
+    evidence: null
+  provider_lifecycle_registration:
+    owner: baobab-cp
+    state: BLOCKED
+    evidence: null
+  engine_release_instance_health:
+    owner: baobab-cp
+    state: BLOCKED
+    evidence: null
+  capability_binding_grants_resolution:
+    owner: baobab-cp
+    state: BLOCKED
+    evidence: null
