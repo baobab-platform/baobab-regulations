@@ -36,6 +36,20 @@ ACTIVATION_GATES = {
     "capability_binding_grants_resolution",
 }
 
+GATE_OWNERS = {
+    "requirement_ingestion_authority": "baobab-regulations",
+    "source_backed_regulatory_assurance": "baobab-regulations",
+    "signed_policy_bundle_and_trust": "infrastructure",
+    "resource_server_authentication": "baobab-iam",
+    "identity_and_audience_allocation": "baobab-iam",
+    "invocation_authorization": "baobab-cp",
+    "event_transport_binding": "infrastructure",
+    "ea_09_certification": "platform-certification",
+    "provider_lifecycle_registration": "baobab-cp",
+    "engine_release_instance_health": "baobab-cp",
+    "capability_binding_grants_resolution": "baobab-cp",
+}
+
 
 class ReadinessInvariantError(ValueError):
     """The source tree tries to claim or imply unsupported provider readiness."""
@@ -72,6 +86,10 @@ def evaluate_readiness(root: Path) -> dict[str, Any]:
     for gate_id, gate in {**external, **activation}.items():
         if not isinstance(gate, dict) or not gate.get("owner"):
             raise ReadinessInvariantError(f"{gate_id}: missing independent owner")
+        if gate.get("owner") != GATE_OWNERS[gate_id]:
+            raise ReadinessInvariantError(
+                f"{gate_id}: authority owner must remain {GATE_OWNERS[gate_id]}"
+            )
         if gate.get("state") != "BLOCKED" or gate.get("evidence") is not None:
             raise ReadinessInvariantError(
                 f"{gate_id}: locally asserted evidence is not an independently "
