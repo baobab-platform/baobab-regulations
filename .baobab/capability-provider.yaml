@@ -5,7 +5,8 @@
 # Conforms to:
 #   baobab-platform/shared/contracts/capability/v1/provider-declaration.schema.json
 # Governing decisions:
-#   ADR-SHARED-017 (EA-02), ADR-SHARED-027, ADR-REG-0031, ADR-REG-0032
+#   ADR-SHARED-017 (EA-02), ADR-SHARED-027, ADR-SHARED-028,
+#   ADR-REG-0031, ADR-REG-0032, ADR-REG-0033
 #
 # Answers ONE question: which canonical Baobab domain capabilities do this
 # engine's CapabilityProviders implement, or formally plan to implement?
@@ -143,16 +144,19 @@ planned_capabilities:
         repository: baobab-platform/baobab-regulations
         decision: ADR-REG-0017
 
-  - proposed_key: regulations.decision.evaluate
-    proposal_status: PROPOSED
+  - capability_key: regulations.decision.evaluate
+    proposal_status: CONTRACTED
     description: >-
-      Produce a deterministic RegulatoryDecision (outcome, enforcement class,
-      reasons, recommended disposition) for a verified rule set. PDP only —
-      operational enforcement remains with domain PEPs (ADR-REG-0018, ADR-REG-0019).
+      Shared ADR-SHARED-028 now defines the canonical deterministic
+      RegulatoryDecision request/response contract. R-CAP-08 adopts that
+      contract locally but does not claim provider implementation; R-CAP-09
+      owns the production evaluator path.
+    target_provider_key: baobab-regulations.core
     provenance:
       authority:
-        repository: baobab-platform/baobab-regulations
-        decision: ADR-REG-0018
+        repository: baobab-platform/shared
+        decision: ADR-SHARED-028
+      source_revision: 1ac220728728932d560fa9edd88ec1faa32599ec
 
   - proposed_key: regulations.change.subscribe
     proposal_status: PROPOSED

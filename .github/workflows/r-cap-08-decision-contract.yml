@@ -1,0 +1,96 @@
+name: R-CAP-08 Decision Contract
+
+on:
+  pull_request:
+    paths:
+      - ".baobab/capability-provider.yaml"
+      - ".baobab/rtd-conformance.yaml"
+      - "src/baobab_regulations/contracts/decision.py"
+      - "src/baobab_regulations/contracts/__init__.py"
+      - "tests/contract/test_r_cap_08_decision_contract.py"
+      - "scripts/validate_r_cap_07.py"
+      - "scripts/validate_r_cap_08.py"
+      - "docs/adr/ADR-REG-0033 — Canonical Decision Evaluation Contract Adoption and R-CAP-09 Boundary.md"
+      - ".github/workflows/r-cap-08-decision-contract.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".baobab/capability-provider.yaml"
+      - ".baobab/rtd-conformance.yaml"
+      - "src/baobab_regulations/contracts/decision.py"
+      - "tests/contract/test_r_cap_08_decision_contract.py"
+      - "scripts/validate_r_cap_08.py"
+      - ".github/workflows/r-cap-08-decision-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SHARED_REF: 1ac220728728932d560fa9edd88ec1faa32599ec
+
+jobs:
+  decision-contract:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout Regulations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact Shared R-CAP-08 authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: baobab-platform/shared
+          ref: ${{ env.SHARED_REF }}
+          path: .shared
+          token: ${{ secrets.SHARED_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@ad3497abcd142e169a10aac37abd5175c44f33c4 # v7.0.0+6
+        with:
+          python-version: "3.14"
+
+      - name: Install contract test runtime
+        run: |
+          python -m pip install --disable-pip-version-check -e .
+          python -m pip install --disable-pip-version-check \
+            -r .shared/.github/foundation-tests/requirements.txt
+          python -m pip install --disable-pip-version-check \
+            "pytest>=9.0.3,<10" \
+            "mypy>=1.13,<2" \
+            "ruff>=0.7,<1"
+
+      - name: Lint R-CAP-08 adoption
+        run: |
+          ruff check \
+            src/baobab_regulations/contracts/decision.py \
+            tests/contract/test_r_cap_08_decision_contract.py \
+            scripts/validate_r_cap_07.py \
+            scripts/validate_r_cap_08.py
+
+      - name: Type-check R-CAP-08 contract adapter
+        run: mypy src/baobab_regulations/contracts/decision.py
+
+      - name: Validate canonical Shared decision contract
+        run: python .shared/scripts/validate-regulatory-decision-contracts.py
+
+      - name: Validate Regulations capability declaration
+        run: >-
+          python .shared/scripts/capability_catalogue.py
+          --contracts-root .shared/contracts
+          validate-declaration .baobab/capability-provider.yaml
+          --engine-id baobab-regulations
+          --repository-root .
+
+      - name: Enforce R-CAP-07 inherited provider boundary
+        run: python scripts/validate_r_cap_07.py --repository-root .
+
+      - name: Enforce R-CAP-08 contract-only maturity
+        run: >-
+          python scripts/validate_r_cap_08.py
+          --repository-root .
+          --shared-root .shared
+
+      - name: Run exact Shared decision contract tests
+        run: pytest -q tests/contract/test_r_cap_08_decision_contract.py

@@ -3,6 +3,19 @@
 The canonical wire schemas remain owned by baobab-platform/shared.
 """
 
+from baobab_regulations.contracts.decision import (
+    DecisionEvaluateRequest,
+    DecisionEvaluateResponse,
+    DecisionProvenance,
+    DecisionReason,
+    PinnedCrossEngineReference,
+    RecommendedDisposition,
+    RegulatoryAssessmentReference,
+    RegulatoryFact,
+    ReplayIdentity,
+    RuleSetReference,
+    RuleVersionReference,
+)
 from baobab_regulations.contracts.events import (
     EVENT_TYPE_REQUIREMENT_SATISFACTION_EVALUATED,
     REGULATIONS_EVENT_SOURCE,
@@ -36,6 +49,10 @@ from baobab_regulations.contracts.rtd06 import (
 
 __all__ = [
     "ContentArtifactReference",
+    "DecisionEvaluateRequest",
+    "DecisionEvaluateResponse",
+    "DecisionProvenance",
+    "DecisionReason",
     "EVENT_TYPE_REQUIREMENT_SATISFACTION_EVALUATED",
     "CrossEngineObjectReference",
     "DocumentEvidenceAssessmentRequest",
@@ -47,18 +64,25 @@ __all__ = [
     "DocumentVersionReference",
     "IssuerClaim",
     "ObjectVersion",
+    "PinnedCrossEngineReference",
     "PinnedRegulationsReference",
+    "RecommendedDisposition",
+    "RegulatoryAssessmentReference",
     "RegulatoryDecisionReference",
+    "RegulatoryFact",
     "RegulatoryDocumentRequirementProjection",
     "RegulatoryEvidenceAssessmentReference",
     "RegulatoryRequirementReference",
     "RejectedEvidence",
+    "ReplayIdentity",
     "RequirementResolveRequest",
     "REGULATIONS_EVENT_SOURCE",
     "REQUIREMENT_SATISFACTION_DATASCHEMA",
     "RequirementResolveResponse",
     "RequirementSatisfactionEvaluatedData",
     "RequirementSatisfactionEvaluatedEvent",
+    "RuleSetReference",
+    "RuleVersionReference",
     "build_requirement_satisfaction_evaluated_event",
     "canonical_event_fingerprint",
 ]
