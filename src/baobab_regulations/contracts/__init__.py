@@ -3,6 +3,15 @@
 The canonical wire schemas remain owned by baobab-platform/shared.
 """
 
+from baobab_regulations.contracts.events import (
+    EVENT_TYPE_REQUIREMENT_SATISFACTION_EVALUATED,
+    REGULATIONS_EVENT_SOURCE,
+    REQUIREMENT_SATISFACTION_DATASCHEMA,
+    RequirementSatisfactionEvaluatedData,
+    RequirementSatisfactionEvaluatedEvent,
+    build_requirement_satisfaction_evaluated_event,
+    canonical_event_fingerprint,
+)
 from baobab_regulations.contracts.rtd06 import (
     ContentArtifactReference,
     CrossEngineObjectReference,
@@ -27,6 +36,7 @@ from baobab_regulations.contracts.rtd06 import (
 
 __all__ = [
     "ContentArtifactReference",
+    "EVENT_TYPE_REQUIREMENT_SATISFACTION_EVALUATED",
     "CrossEngineObjectReference",
     "DocumentEvidenceAssessmentRequest",
     "DocumentEvidenceAssessmentResult",
@@ -44,5 +54,11 @@ __all__ = [
     "RegulatoryRequirementReference",
     "RejectedEvidence",
     "RequirementResolveRequest",
+    "REGULATIONS_EVENT_SOURCE",
+    "REQUIREMENT_SATISFACTION_DATASCHEMA",
     "RequirementResolveResponse",
+    "RequirementSatisfactionEvaluatedData",
+    "RequirementSatisfactionEvaluatedEvent",
+    "build_requirement_satisfaction_evaluated_event",
+    "canonical_event_fingerprint",
 ]

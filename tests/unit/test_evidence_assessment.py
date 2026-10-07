@@ -21,6 +21,10 @@ from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentInvalidIdempotencyKeyError,
     EvidenceAssessmentService,
 )
+from baobab_regulations.contracts.events import (
+    RequirementSatisfactionEvaluatedEvent,
+    build_requirement_satisfaction_evaluated_event,
+)
 from baobab_regulations.contracts.rtd06 import (
     ContentArtifactReference,
     CrossEngineObjectReference,
@@ -503,12 +507,24 @@ async def test_commit_result_is_authoritative_after_concurrent_winner() -> None:
             request_fingerprint: str,
             request: DocumentEvidenceAssessmentRequest,
             result: DocumentEvidenceAssessmentResult,
+            event: RequirementSatisfactionEvaluatedEvent,
         ) -> IdempotencyCommit:
-            del idempotency_key, request_fingerprint
+            del request_fingerprint
             assert request == _request()
             committed = result.model_copy(update={"evaluated_at": concurrently_committed})
             assert committed.assessment_reference.tenant_id == tenant_id
-            return IdempotencyCommit(result=committed, created=False)
+            committed_event = build_requirement_satisfaction_evaluated_event(
+                tenant_id=tenant_id,
+                idempotency_key=idempotency_key,
+                result=committed,
+                correlation_id=event.correlationid,
+                traceparent=event.traceparent,
+            )
+            return IdempotencyCommit(
+                result=committed,
+                event=committed_event,
+                created=False,
+            )
 
     service = EvidenceAssessmentService(
         contexts=FakeContextAuthority(),

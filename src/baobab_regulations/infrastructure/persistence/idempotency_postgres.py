@@ -6,6 +6,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from typing import Any
+from uuid import NAMESPACE_URL, uuid5
 
 import asyncpg
 from pydantic import ValidationError
@@ -16,6 +17,11 @@ from baobab_regulations.application.ports.idempotency import (
     IdempotencyConflictError,
     IdempotencyIntegrityError,
     IdempotencyReplay,
+)
+from baobab_regulations.contracts.events import (
+    RequirementSatisfactionEvaluatedEvent,
+    canonical_event_fingerprint,
+    canonical_event_json,
 )
 from baobab_regulations.contracts.rtd06 import (
     DocumentEvidenceAssessmentRequest,
@@ -46,19 +52,30 @@ class PostgresEvidenceAssessmentIdempotency:
             async with self._pool.acquire() as conn, conn.transaction():
                 await self._bind_tenant(conn, tenant_id)
                 row = await conn.fetchrow(
-                        """
-                        SELECT
-                            assessment_id, tenant_id, idempotency_key,
-                            request_fingerprint, result_fingerprint,
-                            regulatory_decision_object_id, requirement_object_id,
-                            assessment_reason, outcome, request_payload, result_payload,
-                            evaluated_at
-                        FROM regulatory_evidence_assessments
-                        WHERE tenant_id = $1 AND idempotency_key = $2
-                        """,
+                    """
+                    SELECT
+                        assessment_id, tenant_id, idempotency_key,
+                        request_fingerprint, result_fingerprint,
+                        regulatory_decision_object_id, requirement_object_id,
+                        assessment_reason, outcome, request_payload, result_payload,
+                        evaluated_at
+                    FROM regulatory_evidence_assessments
+                    WHERE tenant_id = $1 AND idempotency_key = $2
+                    """,
                     tenant_id,
                     idempotency_key,
                 )
+                event_row = None
+                if row is not None:
+                    event_row = await conn.fetchrow(
+                        """
+                        SELECT envelope, envelope_fingerprint
+                        FROM regulatory_event_outbox
+                        WHERE tenant_id = $1 AND assessment_id = $2
+                        """,
+                        tenant_id,
+                        str(row["assessment_id"]),
+                    )
         except (asyncpg.PostgresError, asyncpg.InterfaceError, OSError) as exc:
             raise IdempotencyAuthorityUnavailableError(
                 "durable assessment store is unavailable"
@@ -66,13 +83,23 @@ class PostgresEvidenceAssessmentIdempotency:
 
         if row is None:
             return None
+        if event_row is None:
+            raise IdempotencyIntegrityError(
+                "committed assessment has no canonical outbox event"
+            )
         result = self._validate_row(
             row,
             expected_tenant_id=tenant_id,
             expected_idempotency_key=idempotency_key,
             expected_request_fingerprint=request_fingerprint,
         )
-        return IdempotencyReplay(result=result)
+        event = self._validate_event_row(
+            event_row,
+            result=result,
+            expected_tenant_id=tenant_id,
+            expected_idempotency_key=idempotency_key,
+        )
+        return IdempotencyReplay(result=result, event=event)
 
     async def commit(
         self,
@@ -82,11 +109,24 @@ class PostgresEvidenceAssessmentIdempotency:
         request_fingerprint: str,
         request: DocumentEvidenceAssessmentRequest,
         result: DocumentEvidenceAssessmentResult,
+        event: RequirementSatisfactionEvaluatedEvent,
     ) -> IdempotencyCommit:
         request_json = self._canonical_json(request)
         result_json = self._canonical_json(result)
         result_fingerprint = self._sha256(result_json)
         assessment_id = result.assessment_reference.object_id
+        self._validate_candidate_event(
+            event=event,
+            result=result,
+            tenant_id=tenant_id,
+            idempotency_key=idempotency_key,
+        )
+        event_json = canonical_event_json(event)
+        event_fingerprint = canonical_event_fingerprint(event)
+        outbox_id = uuid5(
+            NAMESPACE_URL,
+            f"{event.source}|outbox|{event.id}",
+        )
 
         try:
             async with self._pool.acquire() as conn, conn.transaction():
@@ -134,21 +174,71 @@ class PostgresEvidenceAssessmentIdempotency:
                     result.evaluated_at,
                 )
                 created = row is not None
-                if row is None:
+                if created:
+                    await conn.execute(
+                        """
+                        INSERT INTO regulatory_event_outbox (
+                            outbox_id,
+                            event_id,
+                            assessment_id,
+                            tenant_id,
+                            event_type,
+                            source,
+                            subject,
+                            correlation_id,
+                            idempotency_key,
+                            envelope_fingerprint,
+                            envelope,
+                            status,
+                            attempt_count,
+                            next_attempt_at
+                        ) VALUES (
+                            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+                            $11::jsonb, 'PENDING', 0, now()
+                        )
+                        """,
+                        outbox_id,
+                        event.id,
+                        assessment_id,
+                        tenant_id,
+                        event.type,
+                        event.source,
+                        event.subject,
+                        event.correlationid,
+                        idempotency_key,
+                        event_fingerprint,
+                        event_json,
+                    )
+                    event_row = {
+                        "envelope": event_json,
+                        "envelope_fingerprint": event_fingerprint,
+                    }
+                else:
                     row = await conn.fetchrow(
-                            """
-                            SELECT
-                                assessment_id, tenant_id, idempotency_key,
-                                request_fingerprint, result_fingerprint,
-                                regulatory_decision_object_id, requirement_object_id,
-                                assessment_reason, outcome, request_payload, result_payload,
-                                evaluated_at
-                            FROM regulatory_evidence_assessments
-                            WHERE tenant_id = $1 AND idempotency_key = $2
-                            """,
+                        """
+                        SELECT
+                            assessment_id, tenant_id, idempotency_key,
+                            request_fingerprint, result_fingerprint,
+                            regulatory_decision_object_id, requirement_object_id,
+                            assessment_reason, outcome, request_payload, result_payload,
+                            evaluated_at
+                        FROM regulatory_evidence_assessments
+                        WHERE tenant_id = $1 AND idempotency_key = $2
+                        """,
                         tenant_id,
                         idempotency_key,
                     )
+                    event_row = None
+                    if row is not None:
+                        event_row = await conn.fetchrow(
+                            """
+                            SELECT envelope, envelope_fingerprint
+                            FROM regulatory_event_outbox
+                            WHERE tenant_id = $1 AND assessment_id = $2
+                            """,
+                            tenant_id,
+                            str(row["assessment_id"]),
+                        )
         except (asyncpg.UniqueViolationError, asyncpg.CheckViolationError, asyncpg.DataError) as exc:
             raise IdempotencyIntegrityError(
                 "assessment record violates durable-store invariants"
@@ -162,6 +252,10 @@ class PostgresEvidenceAssessmentIdempotency:
             raise IdempotencyIntegrityError(
                 "assessment identity collided with a different idempotency record"
             )
+        if event_row is None:
+            raise IdempotencyIntegrityError(
+                "committed assessment has no canonical outbox event"
+            )
 
         committed_result = self._validate_row(
             row,
@@ -169,7 +263,67 @@ class PostgresEvidenceAssessmentIdempotency:
             expected_idempotency_key=idempotency_key,
             expected_request_fingerprint=request_fingerprint,
         )
-        return IdempotencyCommit(result=committed_result, created=created)
+        committed_event = self._validate_event_row(
+            event_row,
+            result=committed_result,
+            expected_tenant_id=tenant_id,
+            expected_idempotency_key=idempotency_key,
+        )
+        return IdempotencyCommit(
+            result=committed_result,
+            event=committed_event,
+            created=created,
+        )
+
+    @staticmethod
+    def _validate_candidate_event(
+        *,
+        event: RequirementSatisfactionEvaluatedEvent,
+        result: DocumentEvidenceAssessmentResult,
+        tenant_id: str,
+        idempotency_key: str,
+    ) -> None:
+        if event.data.result != result:
+            raise IdempotencyIntegrityError(
+                "canonical event does not contain the candidate assessment result"
+            )
+        if event.tenantid != tenant_id or event.data.tenant_id != tenant_id:
+            raise IdempotencyIntegrityError(
+                "canonical event does not match the trusted tenant"
+            )
+        if event.idempotencykey != idempotency_key:
+            raise IdempotencyIntegrityError(
+                "canonical event does not match the command idempotency key"
+            )
+
+    @staticmethod
+    def _validate_event_row(
+        row: Mapping[str, Any],
+        *,
+        result: DocumentEvidenceAssessmentResult,
+        expected_tenant_id: str,
+        expected_idempotency_key: str,
+    ) -> RequirementSatisfactionEvaluatedEvent:
+        try:
+            event = RequirementSatisfactionEvaluatedEvent.model_validate(
+                PostgresEvidenceAssessmentIdempotency._json_object(row["envelope"])
+            )
+        except (TypeError, ValueError, ValidationError) as exc:
+            raise IdempotencyIntegrityError(
+                "persisted canonical outbox event is invalid"
+            ) from exc
+
+        if canonical_event_fingerprint(event) != str(row["envelope_fingerprint"]):
+            raise IdempotencyIntegrityError(
+                "persisted canonical outbox event fingerprint does not match"
+            )
+        PostgresEvidenceAssessmentIdempotency._validate_candidate_event(
+            event=event,
+            result=result,
+            tenant_id=expected_tenant_id,
+            idempotency_key=expected_idempotency_key,
+        )
+        return event
 
     @staticmethod
     async def _bind_tenant(conn: Any, tenant_id: str) -> None:

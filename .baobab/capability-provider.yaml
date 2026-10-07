@@ -25,8 +25,10 @@
 #   R-CAP-04 adds the exact authenticated/context-bound HTTP routes and
 #   Control Plane caller-bound context-validation adapter. R-CAP-05 adds
 #   durable PostgreSQL assessment snapshots, concurrency-safe tenant-scoped
-#   idempotency and RLS. Event outbox publication, validator workload
-#   activation and provider promotion remain later/cross-repository gates.
+#   idempotency and RLS. R-CAP-06 adds transactional publication intent for
+#   the canonical RTD-08 requirement-satisfaction event, tenant-scoped
+#   lease/retry/dead-letter dispatch, and Shared event-contract evidence.
+#   Validator workload activation and provider promotion remain separate gates.
 #   Both capabilities therefore remain capability_key + CONTRACTED only.
 #   The broader Regulations capabilities remain proposed_key + PROPOSED.
 #   No providers[].support entry is justified yet.
@@ -45,9 +47,10 @@ engine:
 
 # No providers[] yet. R-CAP-01/R-CAP-02/R-CAP-04/R-CAP-05 now cover the
 # canonical application adapters, authenticated/context-bound HTTP surface and
-# durable command state. Outbox publication, the Shared/IAM baobab-regulations
-# validator workload allocation, and provider-readiness promotion remain
-# governed gates. Implementation evidence is not activation.
+# durable command state and canonical satisfaction-event outbox publication.
+# The Shared/IAM baobab-regulations validator workload allocation, deployment
+# transport wiring and provider-readiness promotion remain governed gates.
+# Implementation evidence is not activation.
 
 planned_capabilities:
   - capability_key: regulations.evidence.assess
@@ -55,7 +58,7 @@ planned_capabilities:
     description: >-
       Assess bounded Trade Docs documentary facts against one pinned
       Regulations requirement using the canonical RTD-06 Shared contract.
-      R-CAP-02 adapter, R-CAP-04 authenticated route and R-CAP-05 durable assessment/idempotency store implemented; no provider support is claimed yet.
+      R-CAP-02 adapter, R-CAP-04 authenticated route, R-CAP-05 durable assessment/idempotency store and R-CAP-06 canonical satisfaction-event outbox implemented; no provider support is claimed yet.
     provenance:
       authority:
         repository: baobab-platform/shared

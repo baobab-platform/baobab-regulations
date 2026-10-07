@@ -3,6 +3,7 @@
 import re
 from dataclasses import dataclass, replace
 from typing import Annotated
+from uuid import UUID, uuid4
 
 from fastapi import Header, Request
 
@@ -13,6 +14,7 @@ from baobab_regulations.application.ports.authentication import (
     WorkloadAuthenticationUnavailableError,
 )
 from baobab_regulations.application.ports.context_authority import AuthenticatedCaller
+from baobab_regulations.application.ports.events import EventPublicationMetadata
 from baobab_regulations.tenancy.request import (
     HEADER_CONTEXT,
     HEADER_CORRELATION,
@@ -123,6 +125,20 @@ async def require_canonical_metadata_headers(
     del x_correlation_id, traceparent
 
 
+async def require_event_publication_metadata(
+    request: Request,
+) -> EventPublicationMetadata:
+    """Carry canonical request correlation/trace metadata into RTD-08 events."""
+    correlation = getattr(request.state, "correlation_id", None)
+    if not isinstance(correlation, UUID):
+        correlation = uuid4()
+    traceparent = request.headers.get("traceparent")
+    return EventPublicationMetadata(
+        correlation_id=correlation,
+        traceparent=traceparent,
+    )
+
+
 async def require_idempotency_key(
     idempotency_key: Annotated[
         str | None,
@@ -170,6 +186,7 @@ __all__ = [
     "AuthenticatedCapabilityRequest",
     "require_authenticated_capability_request",
     "require_canonical_metadata_headers",
+    "require_event_publication_metadata",
     "require_idempotency_key",
     "require_request_scope",
 ]

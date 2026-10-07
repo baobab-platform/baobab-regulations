@@ -12,6 +12,10 @@ from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentService,
     EvidenceAssessmentUnavailableError,
 )
+from baobab_regulations.application.services.outbox_dispatch import (
+    AtLeastOnceEventOutboxDispatcher,
+    OutboxRetryPolicy,
+)
 from baobab_regulations.application.services.requirement_resolution import (
     RequirementResolutionAccessDeniedError,
     RequirementResolutionAuthenticationError,
@@ -24,6 +28,7 @@ from baobab_regulations.application.services.requirement_resolution import (
 )
 
 __all__ = [
+    "AtLeastOnceEventOutboxDispatcher",
     "EvaluationService",
     "EvidenceAssessmentAccessDeniedError",
     "EvidenceAssessmentAuthenticationError",
@@ -34,6 +39,7 @@ __all__ = [
     "EvidenceAssessmentNotFoundError",
     "EvidenceAssessmentService",
     "EvidenceAssessmentUnavailableError",
+    "OutboxRetryPolicy",
     "RequirementResolutionAccessDeniedError",
     "RequirementResolutionAuthenticationError",
     "RequirementResolutionContextNotFoundError",

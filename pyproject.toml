@@ -87,7 +87,7 @@ markers = [
     "architecture: enforces module dependency boundaries",
     "contract: validates payloads against shared contract schemas",
     "live_opa: requires a running OPA instance (opt-in)",
-    "postgres: requires the R-CAP-05 PostgreSQL integration database",
+    "postgres: requires the PostgreSQL integration database",
 ]
 
 [tool.bandit]

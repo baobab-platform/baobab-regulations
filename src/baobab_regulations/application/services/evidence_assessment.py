@@ -3,6 +3,7 @@
 import hashlib
 import json
 import re
+from uuid import uuid4
 
 from baobab_regulations.application.ports.context_authority import (
     AuthenticatedCaller,
@@ -12,6 +13,7 @@ from baobab_regulations.application.ports.context_authority import (
     ContextAuthorityUnavailableError,
     ContextNotFoundError,
 )
+from baobab_regulations.application.ports.events import EventPublicationMetadata
 from baobab_regulations.application.ports.evidence_assessment import (
     DocumentaryEvidenceAssessorPort,
     DocumentaryEvidenceAssessorUnavailableError,
@@ -27,6 +29,10 @@ from baobab_regulations.application.ports.requirements import (
     RequirementAuthorityUnavailableError,
     RequirementLookupStatus,
     RequirementRepositoryPort,
+)
+from baobab_regulations.contracts.events import (
+    RequirementSatisfactionEvaluatedEvent,
+    build_requirement_satisfaction_evaluated_event,
 )
 from baobab_regulations.contracts.rtd06 import (
     CrossEngineObjectReference,
@@ -113,8 +119,10 @@ class EvidenceAssessmentService:
         request: DocumentEvidenceAssessmentRequest,
         caller: AuthenticatedCaller,
         idempotency_key: str,
+        event_metadata: EventPublicationMetadata | None = None,
     ) -> DocumentEvidenceAssessmentResult:
         key = self._validate_idempotency_key(idempotency_key)
+        metadata = event_metadata or EventPublicationMetadata(correlation_id=uuid4())
 
         try:
             trusted_context = await self._contexts.redeem(
@@ -195,6 +203,12 @@ class EvidenceAssessmentService:
                 result=replay.result,
                 trusted_tenant_id=tenant_id,
             )
+            self._validate_event_integrity(
+                event=replay.event,
+                result=replay.result,
+                tenant_id=tenant_id,
+                idempotency_key=key,
+            )
             return replay.result
 
         identity = EvidenceAssessmentIdentity(
@@ -217,6 +231,15 @@ class EvidenceAssessmentService:
             result=result,
             trusted_tenant_id=tenant_id,
         )
+        event = build_requirement_satisfaction_evaluated_event(
+            tenant_id=tenant_id,
+            idempotency_key=key,
+            result=result,
+            correlation_id=metadata.correlation_id,
+            causation_id=metadata.causation_id,
+            traceparent=metadata.traceparent,
+            tracestate=metadata.tracestate,
+        )
 
         try:
             committed = await self._idempotency.commit(
@@ -225,6 +248,7 @@ class EvidenceAssessmentService:
                 request_fingerprint=request_fingerprint,
                 request=request,
                 result=result,
+                event=event,
             )
         except IdempotencyConflictError as exc:
             raise EvidenceAssessmentConflictError(
@@ -247,8 +271,34 @@ class EvidenceAssessmentService:
             result=committed.result,
             trusted_tenant_id=tenant_id,
         )
+        self._validate_event_integrity(
+            event=committed.event,
+            result=committed.result,
+            tenant_id=tenant_id,
+            idempotency_key=key,
+        )
         return committed.result
 
+    @staticmethod
+    def _validate_event_integrity(
+        *,
+        event: RequirementSatisfactionEvaluatedEvent,
+        result: DocumentEvidenceAssessmentResult,
+        tenant_id: str,
+        idempotency_key: str,
+    ) -> None:
+        if event.tenantid != tenant_id or event.data.tenant_id != tenant_id:
+            raise EvidenceAssessmentIntegrityError(
+                "canonical satisfaction event changed the trusted tenant"
+            )
+        if event.idempotencykey != idempotency_key:
+            raise EvidenceAssessmentIntegrityError(
+                "canonical satisfaction event changed the command idempotency key"
+            )
+        if event.data.result != result:
+            raise EvidenceAssessmentIntegrityError(
+                "canonical satisfaction event does not contain the committed result"
+            )
     @staticmethod
     def _validate_idempotency_key(value: str) -> str:
         key = value.strip()

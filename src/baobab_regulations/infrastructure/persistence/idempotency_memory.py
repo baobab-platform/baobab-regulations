@@ -11,6 +11,7 @@ from baobab_regulations.application.ports.idempotency import (
     IdempotencyConflictError,
     IdempotencyReplay,
 )
+from baobab_regulations.contracts.events import RequirementSatisfactionEvaluatedEvent
 from baobab_regulations.contracts.rtd06 import (
     DocumentEvidenceAssessmentRequest,
     DocumentEvidenceAssessmentResult,
@@ -22,6 +23,7 @@ class _StoredAssessment:
     request_fingerprint: str
     request: DocumentEvidenceAssessmentRequest
     result: DocumentEvidenceAssessmentResult
+    event: RequirementSatisfactionEvaluatedEvent
 
 
 class InMemoryEvidenceAssessmentIdempotency:
@@ -42,7 +44,7 @@ class InMemoryEvidenceAssessmentIdempotency:
             raise IdempotencyConflictError(
                 "idempotency key already belongs to a different request"
             )
-        return IdempotencyReplay(result=stored.result)
+        return IdempotencyReplay(result=stored.result, event=stored.event)
 
     async def commit(
         self,
@@ -52,6 +54,7 @@ class InMemoryEvidenceAssessmentIdempotency:
         request_fingerprint: str,
         request: DocumentEvidenceAssessmentRequest,
         result: DocumentEvidenceAssessmentResult,
+        event: RequirementSatisfactionEvaluatedEvent,
     ) -> IdempotencyCommit:
         key = (tenant_id, idempotency_key)
         stored = self._store.get(key)
@@ -60,13 +63,18 @@ class InMemoryEvidenceAssessmentIdempotency:
                 raise IdempotencyConflictError(
                     "idempotency key already belongs to a different request"
                 )
-            return IdempotencyCommit(result=stored.result, created=False)
+            return IdempotencyCommit(
+                result=stored.result,
+                event=stored.event,
+                created=False,
+            )
         self._store[key] = _StoredAssessment(
             request_fingerprint=request_fingerprint,
             request=request,
             result=result,
+            event=event,
         )
-        return IdempotencyCommit(result=result, created=True)
+        return IdempotencyCommit(result=result, event=event, created=True)
 
 
 __all__ = ["InMemoryEvidenceAssessmentIdempotency"]
