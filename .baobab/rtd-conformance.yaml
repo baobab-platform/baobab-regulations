@@ -25,9 +25,13 @@ evidence:
     - src/baobab_regulations/domain/decisions/models.py
     - src/baobab_regulations/contracts/rtd06.py
     - src/baobab_regulations/application/services/requirement_resolution.py
+    - src/baobab_regulations/application/services/evidence_assessment.py
+    - src/baobab_regulations/infrastructure/evaluation/documentary.py
     - .baobab/capability-provider.yaml
   test_paths:
     - tests/architecture/test_dependency_boundaries.py
     - tests/unit/test_domain_aggregates.py
     - tests/unit/test_requirement_resolution.py
     - tests/contract/test_rtd06_requirement_resolve_contract.py
+    - tests/unit/test_evidence_assessment.py
+    - tests/contract/test_rtd06_evidence_assessment_contract.py

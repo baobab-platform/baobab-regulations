@@ -1,0 +1,102 @@
+name: R-CAP-02 Evidence Assess
+
+on:
+  pull_request:
+    paths:
+      - "src/baobab_regulations/contracts/rtd06.py"
+      - "src/baobab_regulations/application/ports/context_authority.py"
+      - "src/baobab_regulations/application/ports/evidence_assessment.py"
+      - "src/baobab_regulations/application/ports/idempotency.py"
+      - "src/baobab_regulations/application/ports/requirements.py"
+      - "src/baobab_regulations/application/services/evidence_assessment.py"
+      - "src/baobab_regulations/infrastructure/evaluation/documentary.py"
+      - "src/baobab_regulations/infrastructure/persistence/idempotency_memory.py"
+      - "src/baobab_regulations/infrastructure/persistence/requirements_memory.py"
+      - "tests/unit/test_evidence_assessment.py"
+      - "tests/contract/test_rtd06_evidence_assessment_contract.py"
+      - ".github/workflows/r-cap-02-evidence-assess.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/baobab_regulations/contracts/rtd06.py"
+      - "src/baobab_regulations/application/ports/context_authority.py"
+      - "src/baobab_regulations/application/ports/evidence_assessment.py"
+      - "src/baobab_regulations/application/ports/idempotency.py"
+      - "src/baobab_regulations/application/ports/requirements.py"
+      - "src/baobab_regulations/application/services/evidence_assessment.py"
+      - "src/baobab_regulations/infrastructure/evaluation/documentary.py"
+      - "src/baobab_regulations/infrastructure/persistence/idempotency_memory.py"
+      - "src/baobab_regulations/infrastructure/persistence/requirements_memory.py"
+      - "tests/unit/test_evidence_assessment.py"
+      - "tests/contract/test_rtd06_evidence_assessment_contract.py"
+      - ".github/workflows/r-cap-02-evidence-assess.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SHARED_REF: c2c2fdeaaaab42d666d9d0502824f65d504356a2
+
+jobs:
+  evidence-assess:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout Regulations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact Shared RTD-06 authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: baobab-platform/shared
+          ref: ${{ env.SHARED_REF }}
+          path: .shared
+          token: ${{ secrets.SHARED_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@ad3497abcd142e169a10aac37abd5175c44f33c4 # v7.0.0+6
+        with:
+          python-version: "3.14"
+
+      - name: Install R-CAP-02 test runtime
+        run: |
+          python -m pip install --disable-pip-version-check -e .
+          python -m pip install --disable-pip-version-check \
+            "pytest>=9.0.3,<10" \
+            "pytest-asyncio>=1.0,<2" \
+            "mypy>=1.13,<2" \
+            "ruff>=0.7,<1"
+
+      - name: Lint R-CAP-02 implementation
+        run: |
+          ruff check \
+            src/baobab_regulations/contracts/rtd06.py \
+            src/baobab_regulations/application/ports/context_authority.py \
+            src/baobab_regulations/application/ports/evidence_assessment.py \
+            src/baobab_regulations/application/ports/idempotency.py \
+            src/baobab_regulations/application/services/evidence_assessment.py \
+            src/baobab_regulations/infrastructure/evaluation/documentary.py \
+            src/baobab_regulations/infrastructure/persistence/idempotency_memory.py \
+            tests/unit/test_evidence_assessment.py \
+            tests/contract/test_rtd06_evidence_assessment_contract.py
+
+      - name: Type-check R-CAP-02 implementation
+        run: |
+          mypy \
+            src/baobab_regulations/contracts/rtd06.py \
+            src/baobab_regulations/application/ports/context_authority.py \
+            src/baobab_regulations/application/ports/evidence_assessment.py \
+            src/baobab_regulations/application/ports/idempotency.py \
+            src/baobab_regulations/application/services/evidence_assessment.py \
+            src/baobab_regulations/infrastructure/evaluation/documentary.py \
+            src/baobab_regulations/infrastructure/persistence/idempotency_memory.py
+
+      - name: Run R-CAP-01 and R-CAP-02 unit and exact Shared contract tests
+        run: |
+          pytest -q \
+            tests/unit/test_requirement_resolution.py \
+            tests/unit/test_evidence_assessment.py \
+            tests/contract/test_rtd06_requirement_resolve_contract.py \
+            tests/contract/test_rtd06_evidence_assessment_contract.py

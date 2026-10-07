@@ -22,7 +22,7 @@ class AuthenticatedCaller:
 
 @dataclass(frozen=True, slots=True)
 class TrustedPlatformContext:
-    """Minimum authoritative context needed by R-CAP-01."""
+    """Minimum authoritative context needed by RTD-06 capability adapters."""
 
     context_id: UUID
     tenant_id: str

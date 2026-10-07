@@ -8,6 +8,17 @@ from baobab_regulations.application.ports.context_authority import (
     TrustedPlatformContext,
 )
 from baobab_regulations.application.ports.evaluator import RegulatoryPolicyEvaluatorPort
+from baobab_regulations.application.ports.evidence_assessment import (
+    DocumentaryEvidenceAssessorPort,
+    DocumentaryEvidenceAssessorUnavailableError,
+    EvidenceAssessmentIdentity,
+)
+from baobab_regulations.application.ports.idempotency import (
+    EvidenceAssessmentIdempotencyPort,
+    IdempotencyAuthorityUnavailableError,
+    IdempotencyConflictError,
+    IdempotencyReplay,
+)
 from baobab_regulations.application.ports.repository import (
     DecisionRepositoryPort,
     RuleSetRepositoryPort,
@@ -25,6 +36,13 @@ __all__ = [
     "ContextAuthorityPort",
     "ContextAuthorityUnavailableError",
     "DecisionRepositoryPort",
+    "DocumentaryEvidenceAssessorPort",
+    "DocumentaryEvidenceAssessorUnavailableError",
+    "EvidenceAssessmentIdentity",
+    "EvidenceAssessmentIdempotencyPort",
+    "IdempotencyAuthorityUnavailableError",
+    "IdempotencyConflictError",
+    "IdempotencyReplay",
     "RegulatoryPolicyEvaluatorPort",
     "RequirementAuthorityUnavailableError",
     "RequirementLookup",

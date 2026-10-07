@@ -61,9 +61,10 @@ At present:
 
 - ADR-REG-0001 through ADR-REG-0031 are present under [`docs/adr/`](docs/adr/);
 - the domain model, source model, platform-context guards, EvaluationService and offline ReferenceEvaluator are executable code;
-- R-CAP-01 implements the provider-neutral `regulations.requirement.resolve` application adapter against the pinned Shared RTD-06 request/response contract, including exact pinning and tenant-authority guards;
-- the public FastAPI surface remains limited to health/readiness routes; authenticated capability routing remains a later R-CAP increment;
-- production OPA execution, live Control Plane context redemption, `regulations.evidence.assess`, and durable cross-engine event publication remain outstanding;
+- R-CAP-01 implements the provider-neutral `regulations.requirement.resolve` adapter against the pinned Shared RTD-06 contract, including exact pinning and tenant-authority guards;
+- R-CAP-02 implements the provider-neutral `regulations.evidence.assess` adapter, bounded documentary sufficiency evaluation, exact decision/requirement consistency, tenant/reference integrity and an in-memory idempotency seam;
+- the public FastAPI surface remains limited to health/readiness routes; authenticated capability routing remains R-CAP-04;
+- production OPA execution, live Control Plane context redemption, durable assessment persistence/idempotency (R-CAP-05), and durable cross-engine event publication (R-CAP-06) remain outstanding;
 - ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for either capability yet;
 - Foundation/application CI and release/deployment hardening are not yet complete.
 
