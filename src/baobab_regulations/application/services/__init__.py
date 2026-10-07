@@ -3,6 +3,8 @@
 from baobab_regulations.application.services.evaluation import EvaluationService
 from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentAccessDeniedError,
+    EvidenceAssessmentAuthenticationError,
+    EvidenceAssessmentContextNotFoundError,
     EvidenceAssessmentConflictError,
     EvidenceAssessmentIntegrityError,
     EvidenceAssessmentInvalidIdempotencyKeyError,
@@ -12,6 +14,8 @@ from baobab_regulations.application.services.evidence_assessment import (
 )
 from baobab_regulations.application.services.requirement_resolution import (
     RequirementResolutionAccessDeniedError,
+    RequirementResolutionAuthenticationError,
+    RequirementResolutionContextNotFoundError,
     RequirementResolutionConflictError,
     RequirementResolutionIntegrityError,
     RequirementResolutionNotFoundError,
@@ -22,6 +26,8 @@ from baobab_regulations.application.services.requirement_resolution import (
 __all__ = [
     "EvaluationService",
     "EvidenceAssessmentAccessDeniedError",
+    "EvidenceAssessmentAuthenticationError",
+    "EvidenceAssessmentContextNotFoundError",
     "EvidenceAssessmentConflictError",
     "EvidenceAssessmentIntegrityError",
     "EvidenceAssessmentInvalidIdempotencyKeyError",
@@ -29,6 +35,8 @@ __all__ = [
     "EvidenceAssessmentService",
     "EvidenceAssessmentUnavailableError",
     "RequirementResolutionAccessDeniedError",
+    "RequirementResolutionAuthenticationError",
+    "RequirementResolutionContextNotFoundError",
     "RequirementResolutionConflictError",
     "RequirementResolutionIntegrityError",
     "RequirementResolutionNotFoundError",
