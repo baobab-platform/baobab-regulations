@@ -14,6 +14,7 @@ from baobab_regulations.application.ports.context_authority import (
 from baobab_regulations.application.ports.evidence_assessment import (
     EvidenceAssessmentIdentity,
 )
+from baobab_regulations.application.ports.idempotency import IdempotencyCommit
 from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentAccessDeniedError,
     EvidenceAssessmentConflictError,
@@ -473,3 +474,54 @@ async def test_result_cannot_reference_unsupplied_document_version() -> None:
             caller=AuthenticatedCaller(subject="workload:trade-docs"),
             idempotency_key=IDEMPOTENCY_KEY,
         )
+
+
+@pytest.mark.asyncio
+async def test_commit_result_is_authoritative_after_concurrent_winner() -> None:
+    """The service returns the one result accepted by the durable store."""
+
+    request = _request()
+    locally_evaluated = EVALUATED_AT
+    concurrently_committed = EVALUATED_AT.replace(second=EVALUATED_AT.second + 1)
+
+    class RacingIdempotency:
+        async def replay(
+            self,
+            *,
+            tenant_id: str,
+            idempotency_key: str,
+            request_fingerprint: str,
+        ) -> None:
+            del tenant_id, idempotency_key, request_fingerprint
+            return None
+
+        async def commit(
+            self,
+            *,
+            tenant_id: str,
+            idempotency_key: str,
+            request_fingerprint: str,
+            request: DocumentEvidenceAssessmentRequest,
+            result: DocumentEvidenceAssessmentResult,
+        ) -> IdempotencyCommit:
+            del idempotency_key, request_fingerprint
+            assert request == _request()
+            committed = result.model_copy(update={"evaluated_at": concurrently_committed})
+            assert committed.assessment_reference.tenant_id == tenant_id
+            return IdempotencyCommit(result=committed, created=False)
+
+    service = EvidenceAssessmentService(
+        contexts=FakeContextAuthority(),
+        requirements=InMemoryRequirementRepository([_requirement()]),
+        assessor=ProjectionDocumentaryEvidenceAssessor(clock=lambda: locally_evaluated),
+        idempotency=RacingIdempotency(),
+    )
+
+    result = await service.assess(
+        request=request,
+        caller=AuthenticatedCaller(subject="workload:trade-docs"),
+        idempotency_key=IDEMPOTENCY_KEY,
+    )
+
+    assert result.evaluated_at == concurrently_committed
+    assert result.evaluated_at != locally_evaluated

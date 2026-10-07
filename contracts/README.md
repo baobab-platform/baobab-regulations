@@ -100,12 +100,19 @@ surfaces. R-CAP-04 exposes the canonical authenticated HTTP operations and
 implements caller-bound Control Plane `context_id` validation. Shared remains
 the wire-contract authority; the local Pydantic/FastAPI models only execute it.
 
+R-CAP-05 now durably stores the exact RTD-06 assessment request/result snapshot,
+tenant-scoped idempotency key, request/result SHA-256 fingerprints and indexed
+assessment identities in PostgreSQL. Concurrent duplicates converge on one
+committed result, and replay reads the historical snapshot rather than
+re-fetching mutable evidence. Tenant-private rows use transaction-scoped
+PostgreSQL RLS in addition to explicit tenant predicates.
+
 Live route activation remains separate from route implementation: Regulations
 still needs its governed workload authentication adapter and a registered
 `baobab-regulations` validator workload permitted to call Control Plane
-`context:validate` for the `baobab-regulations` audience. Until that
-cross-repository identity allocation, durable R-CAP-05 command persistence and
-R-CAP-06 publication evidence exist, provider support remains undeclared.
+`context:validate` for the `baobab-regulations` audience. R-CAP-06 must also
+add transactional canonical event outbox publication before provider support is
+promoted.
 
 Domain models under `src/baobab_regulations/domain/` remain the local source of
 truth for Regulations-owned internal semantics. Do not redefine Control Plane,

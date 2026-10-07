@@ -1,21 +1,26 @@
-"""In-memory R-CAP-02 idempotency adapter.
+"""In-memory implementation of the R-CAP-05 idempotency contract.
 
-This provides deterministic command semantics for tests/local execution only.
-R-CAP-05 remains responsible for durable assessment persistence/idempotency.
+Kept for unit tests and local deterministic execution. Production uses the
+PostgreSQL adapter; both implementations share atomic store-if-absent semantics.
 """
 
 from dataclasses import dataclass
 
 from baobab_regulations.application.ports.idempotency import (
+    IdempotencyCommit,
     IdempotencyConflictError,
     IdempotencyReplay,
 )
-from baobab_regulations.contracts.rtd06 import DocumentEvidenceAssessmentResult
+from baobab_regulations.contracts.rtd06 import (
+    DocumentEvidenceAssessmentRequest,
+    DocumentEvidenceAssessmentResult,
+)
 
 
 @dataclass(frozen=True, slots=True)
 class _StoredAssessment:
     request_fingerprint: str
+    request: DocumentEvidenceAssessmentRequest
     result: DocumentEvidenceAssessmentResult
 
 
@@ -45,8 +50,9 @@ class InMemoryEvidenceAssessmentIdempotency:
         tenant_id: str,
         idempotency_key: str,
         request_fingerprint: str,
+        request: DocumentEvidenceAssessmentRequest,
         result: DocumentEvidenceAssessmentResult,
-    ) -> None:
+    ) -> IdempotencyCommit:
         key = (tenant_id, idempotency_key)
         stored = self._store.get(key)
         if stored is not None:
@@ -54,11 +60,13 @@ class InMemoryEvidenceAssessmentIdempotency:
                 raise IdempotencyConflictError(
                     "idempotency key already belongs to a different request"
                 )
-            return
+            return IdempotencyCommit(result=stored.result, created=False)
         self._store[key] = _StoredAssessment(
             request_fingerprint=request_fingerprint,
+            request=request,
             result=result,
         )
+        return IdempotencyCommit(result=result, created=True)
 
 
 __all__ = ["InMemoryEvidenceAssessmentIdempotency"]

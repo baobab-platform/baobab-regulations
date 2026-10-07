@@ -21,6 +21,7 @@ from baobab_regulations.application.ports.idempotency import (
     EvidenceAssessmentIdempotencyPort,
     IdempotencyAuthorityUnavailableError,
     IdempotencyConflictError,
+    IdempotencyIntegrityError,
 )
 from baobab_regulations.application.ports.requirements import (
     RequirementAuthorityUnavailableError,
@@ -179,6 +180,10 @@ class EvidenceAssessmentService:
             raise EvidenceAssessmentConflictError(
                 "Idempotency-Key was already used for a different assessment request"
             ) from exc
+        except IdempotencyIntegrityError as exc:
+            raise EvidenceAssessmentIntegrityError(
+                "persisted assessment state failed integrity validation"
+            ) from exc
         except IdempotencyAuthorityUnavailableError as exc:
             raise EvidenceAssessmentUnavailableError(
                 "assessment idempotency authority is unavailable"
@@ -214,22 +219,35 @@ class EvidenceAssessmentService:
         )
 
         try:
-            await self._idempotency.commit(
+            committed = await self._idempotency.commit(
                 tenant_id=tenant_id,
                 idempotency_key=key,
                 request_fingerprint=request_fingerprint,
+                request=request,
                 result=result,
             )
         except IdempotencyConflictError as exc:
             raise EvidenceAssessmentConflictError(
                 "Idempotency-Key was concurrently committed for a different request"
             ) from exc
+        except IdempotencyIntegrityError as exc:
+            raise EvidenceAssessmentIntegrityError(
+                "persisted assessment state failed integrity validation"
+            ) from exc
         except IdempotencyAuthorityUnavailableError as exc:
             raise EvidenceAssessmentUnavailableError(
                 "assessment idempotency authority is unavailable"
             ) from exc
 
-        return result
+        # The durable store owns the authoritative result under concurrency.
+        # A simultaneous caller may have committed first with the same
+        # fingerprint; in that case every caller returns that one stored result.
+        self._validate_result_integrity(
+            request=request,
+            result=committed.result,
+            trusted_tenant_id=tenant_id,
+        )
+        return committed.result
 
     @staticmethod
     def _validate_idempotency_key(value: str) -> str:

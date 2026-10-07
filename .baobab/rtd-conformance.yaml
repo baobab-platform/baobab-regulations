@@ -30,6 +30,8 @@ evidence:
     - src/baobab_regulations/api/routes.py
     - src/baobab_regulations/api/problems.py
     - src/baobab_regulations/infrastructure/control_plane/context.py
+    - src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py
+    - migrations/000003_regulatory_evidence_assessments.sql
     - .baobab/capability-provider.yaml
   test_paths:
     - tests/architecture/test_dependency_boundaries.py
@@ -41,3 +43,4 @@ evidence:
     - tests/api/test_rtd06_routes.py
     - tests/unit/test_control_plane_context_authority.py
     - tests/contract/test_rtd06_http_openapi.py
+    - tests/integration/test_postgres_evidence_assessment_idempotency.py

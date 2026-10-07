@@ -27,7 +27,9 @@ from baobab_regulations.application.ports.evidence_assessment import (
 from baobab_regulations.application.ports.idempotency import (
     EvidenceAssessmentIdempotencyPort,
     IdempotencyAuthorityUnavailableError,
+    IdempotencyCommit,
     IdempotencyConflictError,
+    IdempotencyIntegrityError,
     IdempotencyReplay,
 )
 from baobab_regulations.application.ports.repository import (
@@ -54,7 +56,9 @@ __all__ = [
     "EvidenceAssessmentIdentity",
     "EvidenceAssessmentIdempotencyPort",
     "IdempotencyAuthorityUnavailableError",
+    "IdempotencyCommit",
     "IdempotencyConflictError",
+    "IdempotencyIntegrityError",
     "IdempotencyReplay",
     "RegulatoryPolicyEvaluatorPort",
     "RequirementAuthorityUnavailableError",
