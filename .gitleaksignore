@@ -1,0 +1,4 @@
+# Exact historical false positives from R-CAP-09 test-only idempotency fixtures.
+# These are deterministic non-secret test values. Keep ignores fingerprint-specific.
+ddb67df04bc6b2b4e88b1e5c4fdd293e269c4c6d:tests/unit/test_decision_evaluation.py:generic-api-key:51
+ddb67df04bc6b2b4e88b1e5c4fdd293e269c4c6d:tests/unit/test_decision_evaluation.py:generic-api-key:316
