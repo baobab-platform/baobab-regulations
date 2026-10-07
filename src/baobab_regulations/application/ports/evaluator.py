@@ -81,7 +81,8 @@ class LegacyRegulatoryPolicyEvaluatorPort(Protocol):
         facts: dict[str, Any],
         rule_set_id: str,
         enforcement_class_ceiling: str | None = None,
-    ) -> RegulatoryDecision: ...
+    ) -> RegulatoryDecision:
+        pass
 
 
 class RegulatoryPolicyEvaluatorPort(Protocol):
@@ -90,7 +91,8 @@ class RegulatoryPolicyEvaluatorPort(Protocol):
     async def evaluate(
         self,
         evaluation: RegulatoryEvaluationInput,
-    ) -> RegulatoryEvaluationResult: ...
+    ) -> RegulatoryEvaluationResult:
+        pass
 
 
 __all__ = [
