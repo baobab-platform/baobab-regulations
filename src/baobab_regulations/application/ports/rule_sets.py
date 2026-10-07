@@ -32,7 +32,8 @@ class RuleSetAuthorityPort(Protocol):
         knowledge_time: datetime,
         requested_assurance: str,
         trusted_tenant_id: str,
-    ) -> ResolvedRuleSet: ...
+    ) -> ResolvedRuleSet:
+        pass
 
 
 __all__ = [
