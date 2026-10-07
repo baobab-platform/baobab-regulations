@@ -93,10 +93,17 @@ They are **not** canonical Shared events and RTD-06 does not promote them.
 New cross-engine implementation must not treat their event names or envelope
 shape as the production platform contract.
 
-## Current source of domain truth
+## Runtime adoption status
 
-Until the runtime implements/pins the Shared contracts, domain models under
-`src/baobab_regulations/domain/` remain the local source of truth for
-Regulations-owned semantics.
+R-CAP-01 and R-CAP-02 now provide runtime adapters for the pinned Shared RTD-06
+`requirementResolveRequest/Response` and `documentEvidenceAssessmentRequest/Result`
+surfaces. Shared remains the wire-contract authority; the local Pydantic models
+exist only to execute those canonical contracts.
 
-Do not redefine Control Plane, IAM or Trade Docs canonical identities here.
+Provider support is still intentionally undeclared until authenticated routes,
+durable assessment idempotency/persistence and required publication/runtime
+evidence are implemented by later R-CAP gates.
+
+Domain models under `src/baobab_regulations/domain/` remain the local source of
+truth for Regulations-owned internal semantics. Do not redefine Control Plane,
+IAM or Trade Docs canonical identities here.
