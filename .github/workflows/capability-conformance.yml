@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 env:
-  SHARED_REF: d99288e7f525d87b2d41f1d03245a65115606b8c
+  SHARED_REF: 1ac220728728932d560fa9edd88ec1faa32599ec
 
 jobs:
   capability-declaration:

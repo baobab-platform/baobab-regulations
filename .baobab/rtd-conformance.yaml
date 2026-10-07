@@ -7,13 +7,15 @@ repository:
   maturity: DOMAIN_RUNTIME
 shared:
   repository: baobab-platform/shared
-  commit: "d99288e7f525d87b2d41f1d03245a65115606b8c"
+  commit: "1ac220728728932d560fa9edd88ec1faa32599ec"
   required_contracts:
     - contracts/capability/v1/catalogue.yaml
     - contracts/control-plane/v1/domain.schema.json
     - contracts/cross-engine-reference/v1/domain.schema.json
     - contracts/events/v1/envelope.schema.json
     - contracts/regulations/v1/capabilities.yaml
+    - contracts/regulatory-decision/v1/domain.schema.json
+    - contracts/regulatory-decision/v1/regulations.openapi.yaml
     - contracts/regulatory-document-exchange/v1/domain.schema.json
     - contracts/regulatory-document-exchange/v1/events.schema.json
 evidence:
@@ -22,9 +24,12 @@ evidence:
     - docs/adr/ADR-REG-0027 — Cross-Border Trade Regulatory Profile.md
     - docs/adr/ADR-REG-0031 — Regulations Capability Census, Contracted Surface and Provider-Implementation Boundary.md
     - docs/adr/ADR-REG-0032 — First Canonical Provider Declaration, Partial Support and Activation Boundary.md
+    - docs/adr/ADR-REG-0033 — Canonical Decision Evaluation Contract Adoption and R-CAP-09 Boundary.md
   source_paths:
     - src/baobab_regulations/domain/decisions/models.py
     - src/baobab_regulations/contracts/rtd06.py
+    - src/baobab_regulations/contracts/decision.py
+    - scripts/validate_r_cap_08.py
     - src/baobab_regulations/application/services/requirement_resolution.py
     - src/baobab_regulations/application/services/evidence_assessment.py
     - src/baobab_regulations/infrastructure/evaluation/documentary.py
@@ -50,6 +55,8 @@ evidence:
     - tests/api/test_rtd06_routes.py
     - tests/unit/test_control_plane_context_authority.py
     - tests/contract/test_rtd06_http_openapi.py
+    - tests/contract/test_r_cap_08_decision_contract.py
+    - .github/workflows/r-cap-08-decision-contract.yml
     - tests/integration/test_postgres_evidence_assessment_idempotency.py
     - tests/contract/test_rtd08_requirement_satisfaction_event.py
     - tests/integration/test_postgres_event_outbox.py

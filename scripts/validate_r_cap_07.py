@@ -20,7 +20,6 @@ CANONICAL_SUPPORT = {
 PROPOSED_ONLY = {
     "regulations.change.subscribe",
     "regulations.context.resolve",
-    "regulations.decision.evaluate",
     "regulations.pack.compose",
 }
 
@@ -107,10 +106,22 @@ def main() -> None:
         for item in planned
         if isinstance(item, dict) and item.get("proposal_status") == "CONTRACTED"
     }
-    if contracted_in_planned:
+    duplicated = contracted_in_planned & support_keys
+    if duplicated:
         fail(
             "canonical supported capabilities must not remain duplicated under "
-            f"planned_capabilities: {sorted(contracted_in_planned)}"
+            f"planned_capabilities: {sorted(duplicated)}"
+        )
+
+    contracted = {
+        item.get("capability_key")
+        for item in planned
+        if isinstance(item, dict) and item.get("proposal_status") == "CONTRACTED"
+    }
+    if contracted != {"regulations.decision.evaluate"}:
+        fail(
+            "R-CAP-08 follow-on must keep only regulations.decision.evaluate "
+            f"as CONTRACTED planned capability: {sorted(contracted)}"
         )
 
     proposed = {

@@ -131,3 +131,26 @@ transport. EA-09 certification and Control Plane activation remain later gates.
 Domain models under `src/baobab_regulations/domain/` remain the local source of
 truth for Regulations-owned internal semantics. Do not redefine Control Plane,
 IAM or Trade Docs canonical identities here.
+
+
+## R-CAP-08 — regulatory decision evaluation
+
+Shared ADR-SHARED-028 now owns the canonical contract for
+`regulations.decision.evaluate` under
+`contracts/regulatory-decision/v1`.
+
+This repository adopts that contract through
+`src/baobab_regulations/contracts/decision.py` and exact round-trip contract
+tests. The capability is **CONTRACTED**, not provider support.
+
+The canonical boundary explicitly keeps:
+
+```text
+Idempotency-Key != replay_key
+INDETERMINATE != evaluator failure
+RegulatoryDecision != operational enforcement
+rule-set identity != OPA/Rego implementation
+```
+
+R-CAP-09 must implement the production evaluator behind the provider-neutral
+port and may not alter the Shared wire contract merely to fit evaluator output.
