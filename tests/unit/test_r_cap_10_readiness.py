@@ -134,6 +134,17 @@ def test_local_readiness_proof_must_be_declared_as_provider_evidence(
         evaluate_readiness(root)
 
 
+def test_gate_authority_cannot_be_reassigned_locally(tmp_path: Path) -> None:
+    root = _fixture_tree(tmp_path)
+
+    def reassign(doc: dict) -> None:
+        doc["activation_gates"]["engine_release_instance_health"]["owner"] = "infrastructure"
+
+    _edit(root, "r-cap-10-readiness.yaml", reassign)
+    with pytest.raises(ReadinessInvariantError, match="authority owner"):
+        evaluate_readiness(root)
+
+
 def test_bad_activation_and_new_capability_claims_fail_closed(tmp_path: Path) -> None:
     root = _fixture_tree(tmp_path)
 
