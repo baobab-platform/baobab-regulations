@@ -18,11 +18,12 @@
 #
 # Catalogue status (2026-10-06):
 #   ADR-SHARED-027 completes the first Regulations capability census.
-#   Two narrow RTD-06 capabilities are now canonical but remain DRAFT and
-#   unimplemented by this engine:
+#   Two narrow RTD-06 capabilities are canonical and remain DRAFT:
 #     regulations.requirement.resolve
 #     regulations.evidence.assess
-#   They therefore appear below as capability_key + CONTRACTED only.
+#   R-CAP-01 implements the application adapter for requirement.resolve, while
+#   evidence.assess and the authenticated public capability route remain later
+#   increments. Both therefore remain capability_key + CONTRACTED only.
 #   The broader Regulations capabilities remain proposed_key + PROPOSED.
 #   No providers[].support entry is justified yet.
 #
@@ -38,9 +39,10 @@ engine:
   # Repository name as engine identity (ADR-SHARED-012).
   engine_id: baobab-regulations
 
-# No providers[] yet. Shared now has two contracted Regulations capabilities,
-# but this repository does not implement their canonical request/response
-# contracts. The offline ReferenceEvaluator is internal scaffold evidence,
+# No providers[] yet. R-CAP-01 implements only the provider-neutral application
+# adapter for regulations.requirement.resolve. Authenticated route integration,
+# broader contract coverage and provider-readiness promotion remain governed
+# later increments. The offline ReferenceEvaluator is internal scaffold evidence,
 # not a declared CapabilityProvider.
 
 planned_capabilities:
