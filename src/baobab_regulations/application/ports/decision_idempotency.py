@@ -41,7 +41,8 @@ class DecisionEvaluationIdempotencyPort(Protocol):
         request_fingerprint: str,
         replay_key: str,
         input_fingerprint: str,
-    ) -> DecisionReplay | None: ...
+    ) -> DecisionReplay | None:
+        pass
 
     async def commit(
         self,
@@ -52,7 +53,8 @@ class DecisionEvaluationIdempotencyPort(Protocol):
         input_fingerprint: str,
         request: DecisionEvaluateRequest,
         response: DecisionEvaluateResponse,
-    ) -> DecisionCommit: ...
+    ) -> DecisionCommit:
+        pass
 
 
 __all__ = [
