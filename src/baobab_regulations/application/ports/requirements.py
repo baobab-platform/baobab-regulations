@@ -32,6 +32,10 @@ class RequirementLookup:
             raise ValueError("non-FOUND lookup must not carry a requirement projection")
 
 
+class RequirementAuthorityIntegrityError(RuntimeError):
+    """Owner-side persisted requirement content failed an integrity check."""
+
+
 class RequirementAuthorityUnavailableError(RuntimeError):
     """Regulations requirement authority/store is unavailable."""
 
@@ -42,10 +46,12 @@ class RequirementRepositoryPort(Protocol):
     async def resolve_exact(
         self,
         reference: RegulatoryRequirementReference,
-    ) -> RequirementLookup: ...
+    ) -> RequirementLookup:
+        pass
 
 
 __all__ = [
+    "RequirementAuthorityIntegrityError",
     "RequirementAuthorityUnavailableError",
     "RequirementLookup",
     "RequirementLookupStatus",

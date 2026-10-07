@@ -9,6 +9,7 @@ from baobab_regulations.application.ports.context_authority import (
     ContextNotFoundError,
 )
 from baobab_regulations.application.ports.requirements import (
+    RequirementAuthorityIntegrityError,
     RequirementAuthorityUnavailableError,
     RequirementLookupStatus,
     RequirementRepositoryPort,
@@ -114,6 +115,10 @@ class RequirementResolutionService:
 
         try:
             lookup = await self._requirements.resolve_exact(request.requirement_reference)
+        except RequirementAuthorityIntegrityError as exc:
+            raise RequirementResolutionIntegrityError(
+                "Regulations requirement repository contains inconsistent pinned content"
+            ) from exc
         except RequirementAuthorityUnavailableError as exc:
             raise RequirementResolutionUnavailableError(
                 "Regulations requirement authority is unavailable"
