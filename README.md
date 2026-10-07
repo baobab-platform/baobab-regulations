@@ -53,13 +53,13 @@ That distinguishes it from `baobab-pulse`, whose role is primarily intelligence 
 
 ## Current repository status
 
-The repository contains the original **30-ADR foundational architecture programme** plus ADR-REG-0031, which records the first evidence-based capability census.
+The repository contains the original **30-ADR foundational architecture programme** plus ADR-REG-0031 through ADR-REG-0034, covering capability census, provider readiness, canonical decision-contract adoption and the first production-shaped policy evaluator.
 
 Application implementation is **partially active**. The repository now contains real Python domain/application/infrastructure code, a FastAPI scaffold, deterministic reference evaluation, persistence scaffolding, migrations, tests, a real `.baobab/environment.yaml`, a real `.baobab/repository.yaml`, and an active devcontainer declaration.
 
 At present:
 
-- ADR-REG-0001 through ADR-REG-0031 are present under [`docs/adr/`](docs/adr/);
+- ADR-REG-0001 through ADR-REG-0034 are present under [`docs/adr/`](docs/adr/);
 - the domain model, source model, platform-context guards, EvaluationService and offline ReferenceEvaluator are executable code;
 - R-CAP-01 implements the provider-neutral `regulations.requirement.resolve` adapter against the pinned Shared RTD-06 contract, including exact pinning and tenant-authority guards;
 - R-CAP-02 implements the provider-neutral `regulations.evidence.assess` adapter, bounded documentary sufficiency evaluation, exact decision/requirement consistency, tenant/reference integrity and an in-memory idempotency seam;
@@ -69,10 +69,11 @@ At present:
 - R-CAP-06 commits the canonical RTD-08 `requirement-satisfaction.evaluated` CloudEvent in the same PostgreSQL transaction as a new evidence assessment, then exposes tenant-scoped lease/retry/dead-letter dispatch through a provider-neutral publisher port; delivery retries retain the original event ID;
 - `document-requirements.determined` remains intentionally unwired until an authoritative requirement-set determination write path exists; `requirement.resolve` is read-only and must not manufacture that event;
 - R-CAP-07 declares the first-party `baobab-regulations.core` provider with **PARTIAL** contract-major-1 support for `regulations.requirement.resolve` and `regulations.evidence.assess`; the two capabilities are no longer duplicated as planned CONTRACTED entries;
-- R-CAP-08 adopts Shared ADR-SHARED-028 and moves `regulations.decision.evaluate` from PROPOSED to **CONTRACTED**. The exact provider-neutral request/response models and contract tests exist locally, but the capability remains under `planned_capabilities` with no provider-support claim until R-CAP-09 implements the production evaluator path;
+- R-CAP-08 adopts Shared ADR-SHARED-028 and contracts `regulations.decision.evaluate`;
+- R-CAP-09 implements the first production-shaped `regulations.decision.evaluate` runtime: typed bounded BRIR v1, deterministic BRIR→Rego compilation, checksum-pinned live OPA execution, caller/context-bound decision orchestration, bitemporal/assurance-aware rule-set authority, durable PostgreSQL command/replay snapshots, tenant RLS, differential reference-evaluator proof and the canonical authenticated `POST /decisions/evaluate` route. The capability is declared **PARTIAL**, not IMPLEMENTED;
 - the Foundation repository lifecycle is now `active`, meaning Regulations is an actively implemented engine rather than an experimental architecture repository; this is not provider/runtime lifecycle and does not mean production ready;
 - Shared registration generation remains deliberately impossible because PARTIAL support is never generated into EngineRegistration;
-- production policy evaluation (R-CAP-09), production workload authentication, a durable requirement-authority adapter, Shared/IAM `baobab-regulations-workload` allocation for `context:validate`, caller `baobab-regulations` audience authority, capability-resolution invocation proof and deployment event-transport wiring remain outstanding;
+- production signed OPA bundle distribution/trust roots, production workload authentication, a durable requirement-authority adapter, Shared/IAM `baobab-regulations-workload` allocation for `context:validate`, caller `baobab-regulations` audience authority, capability-resolution invocation proof and deployment event-transport wiring remain outstanding;
 - EA-09 certification, Control Plane provider registration/activation, bindings, grants and runtime resolution remain intentionally absent;
 - Foundation/application CI and release/deployment hardening are not yet complete.
 
@@ -1218,7 +1219,7 @@ This structure will evolve when implementation begins.
 
 # Architecture decision record programme
 
-The 30 foundational ADRs plus the post-foundation capability census ADR are stored in [`docs/adr/`](docs/adr/).
+The 30 foundational ADRs plus the post-foundation R-CAP governance/runtime ADRs are stored in [`docs/adr/`](docs/adr/).
 
 | ADR range | Architecture area |
 |---|---|
@@ -1233,6 +1234,9 @@ The 30 foundational ADRs plus the post-foundation capability census ADR are stor
 | `0029` | Jurisdiction packs, coverage and regulatory marketplace |
 | `0030` | Commercial products, entitlements, metering and SLA |
 | `0031` | Capability census, contracted surfaces and provider-readiness boundary |
+| `0032` | First canonical provider declaration and activation boundary |
+| `0033` | Canonical decision-evaluation contract adoption and R-CAP-09 boundary |
+| `0034` | Production policy evaluator, BRIR→Rego compiler and decision runtime |
 
 Implementation MUST consult the relevant ADRs before introducing domain models, APIs, persistence models, provider integrations or cross-engine contracts.
 

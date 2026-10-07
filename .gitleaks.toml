@@ -1,17 +1,18 @@
-title = "Baobab Regulations Gitleaks configuration"
+title = "Baobab Regulations Gitleaks policy"
 
 [extend]
 useDefault = true
 
-# R-CAP-09 uses deterministic idempotency-key strings in one unit-test module.
-# These are test fixtures, not credentials. Keep the exception narrow: both
-# the exact file path and exact fixture-line pattern must match.
 [[allowlists]]
-description = "R-CAP-09 deterministic test idempotency keys"
+description = "The detector policy itself contains detection-pattern examples."
+paths = ['''^\.gitleaks\.toml$''']
+
+[[allowlists]]
+description = "R-CAP-09 deterministic test command keys are non-secret idempotency fixtures."
+targetRules = ["generic-api-key"]
 condition = "AND"
 regexTarget = "line"
 paths = ['''^tests/unit/test_decision_evaluation\.py$''']
 regexes = [
-  '''IDEMPOTENCY_KEY\s*=\s*"r-cap-09-decision-0001"''',
-  '''idempotency_key\s*=\s*"r-cap-09-decision-0002"''',
+  '''(?i)\bidempotency_key\s*=\s*["']r-cap-09-decision-000[12]["']'''
 ]

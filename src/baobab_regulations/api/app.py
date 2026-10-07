@@ -24,6 +24,7 @@ _TRACEPARENT_RE = re.compile(_TRACEPARENT_PATTERN)
 _CANONICAL_PATHS = {
     "/documentary-requirements/resolve",
     "/documentary-evidence/assessments",
+    "/decisions/evaluate",
 }
 
 
@@ -190,7 +191,7 @@ def create_app(runtime: CapabilityApiRuntime | None = None) -> FastAPI:
             status=400,
             code="VALIDATION_FAILED",
             title="Invalid request",
-            detail="request does not satisfy the canonical RTD-06 contract",
+            detail="request does not satisfy the canonical Regulations contract",
             errors=_validation_errors(exc),
         )
 

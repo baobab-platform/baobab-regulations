@@ -1,0 +1,224 @@
+name: R-CAP-09 Production Policy Evaluator
+
+on:
+  pull_request:
+    paths:
+      - ".baobab/capability-provider.yaml"
+      - ".baobab/rtd-conformance.yaml"
+      - "migrations/000005_regulatory_decision_evaluations.sql"
+      - "migrations/README.md"
+      - "src/baobab_regulations/api/**"
+      - "src/baobab_regulations/application/ports/decision_idempotency.py"
+      - "src/baobab_regulations/application/ports/evaluator.py"
+      - "src/baobab_regulations/application/ports/repository.py"
+      - "src/baobab_regulations/application/ports/rule_sets.py"
+      - "src/baobab_regulations/application/services/decision_evaluation.py"
+      - "src/baobab_regulations/brir/**"
+      - "src/baobab_regulations/domain/rules/models.py"
+      - "src/baobab_regulations/infrastructure/evaluation/reference_canonical.py"
+      - "src/baobab_regulations/infrastructure/opa/**"
+      - "src/baobab_regulations/infrastructure/persistence/decision_idempotency_memory.py"
+      - "src/baobab_regulations/infrastructure/persistence/decision_idempotency_postgres.py"
+      - "src/baobab_regulations/infrastructure/persistence/memory.py"
+      - "src/baobab_regulations/infrastructure/persistence/postgres.py"
+      - "src/baobab_regulations/infrastructure/rule_sets.py"
+      - "scripts/validate_r_cap_07.py"
+      - "scripts/validate_r_cap_08.py"
+      - "scripts/validate_r_cap_09.py"
+      - "scripts/compile_r_cap_09_fixture.py"
+      - "tests/api/test_r_cap_09_decision_route.py"
+      - "tests/unit/test_brir_compiler.py"
+      - "tests/unit/test_decision_evaluation.py"
+      - "tests/unit/test_opa_evaluator.py"
+      - "tests/unit/test_rule_set_authority.py"
+      - "tests/integration/test_live_opa_decision_evaluation.py"
+      - "tests/integration/test_postgres_decision_evaluation.py"
+      - "tests/fixtures/brir/r_cap_09_rule_set.json"
+      - ".github/workflows/r-cap-09-production-policy-evaluator.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SHARED_REF: 1ac220728728932d560fa9edd88ec1faa32599ec
+  R_CAP_09_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/baobab_regulations_test
+  R_CAP_09_OPA_URL: http://127.0.0.1:8181
+  OPA_VERSION: v1.21.1
+  OPA_LINUX_AMD64_STATIC_SHA256: 668506eb17a2eaa1fce6cc0d1f42ef85125d4ac5bda5fc74d1152d0c77145031
+
+jobs:
+  production-policy-evaluator:
+    runs-on: ubuntu-26.04
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: baobab_regulations_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d baobab_regulations_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout Regulations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact Shared R-CAP-08 contract authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: baobab-platform/shared
+          ref: ${{ env.SHARED_REF }}
+          path: .shared
+          token: ${{ secrets.SHARED_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@ad3497abcd142e169a10aac37abd5175c44f33c4 # v7.0.0+6
+        with:
+          python-version: "3.14"
+
+      - name: Install R-CAP-09 test runtime
+        run: |
+          python -m pip install --disable-pip-version-check -e .
+          python -m pip install --disable-pip-version-check \
+            -r .shared/.github/foundation-tests/requirements.txt
+          python -m pip install --disable-pip-version-check \
+            "pytest>=9.0.3,<10" \
+            "pytest-asyncio>=1.0,<2" \
+            "mypy>=1.13,<2" \
+            "ruff>=0.7,<1"
+
+      - name: Install checksum-verified OPA
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location \
+            "https://github.com/open-policy-agent/opa/releases/download/${OPA_VERSION}/opa_linux_amd64_static" \
+            --output /tmp/opa
+          echo "${OPA_LINUX_AMD64_STATIC_SHA256}  /tmp/opa" | sha256sum --check --strict
+          chmod +x /tmp/opa
+          /tmp/opa version
+
+      - name: Compile governed BRIR fixture to Rego v1
+        run: |
+          python scripts/compile_r_cap_09_fixture.py \
+            tests/fixtures/brir/r_cap_09_rule_set.json \
+            /tmp/r-cap-09-compiled.rego \
+            --metadata /tmp/r-cap-09-compiled.json
+          cat /tmp/r-cap-09-compiled.json
+          /tmp/opa check /tmp/r-cap-09-compiled.rego
+
+      - name: Start live OPA fixture
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup /tmp/opa run \
+            --server \
+            --addr=127.0.0.1:8181 \
+            /tmp/r-cap-09-compiled.rego \
+            >/tmp/r-cap-09-opa.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent "http://127.0.0.1:8181/health?bundles=true" >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/r-cap-09-opa.log
+          exit 1
+
+      - name: Lint R-CAP-09 implementation
+        run: |
+          ruff check \
+            src/baobab_regulations/api/app.py \
+            src/baobab_regulations/api/routes.py \
+            src/baobab_regulations/api/runtime.py \
+            src/baobab_regulations/application/ports/decision_idempotency.py \
+            src/baobab_regulations/application/ports/evaluator.py \
+            src/baobab_regulations/application/ports/repository.py \
+            src/baobab_regulations/application/ports/rule_sets.py \
+            src/baobab_regulations/application/services/decision_evaluation.py \
+            src/baobab_regulations/brir/compiler.py \
+            src/baobab_regulations/brir/models.py \
+            src/baobab_regulations/domain/rules/models.py \
+            src/baobab_regulations/infrastructure/evaluation/reference_canonical.py \
+            src/baobab_regulations/infrastructure/opa/client.py \
+            src/baobab_regulations/infrastructure/persistence/decision_idempotency_memory.py \
+            src/baobab_regulations/infrastructure/persistence/decision_idempotency_postgres.py \
+            src/baobab_regulations/infrastructure/persistence/memory.py \
+            src/baobab_regulations/infrastructure/persistence/postgres.py \
+            src/baobab_regulations/infrastructure/rule_sets.py \
+            scripts/validate_r_cap_07.py \
+            scripts/validate_r_cap_08.py \
+            scripts/validate_r_cap_09.py \
+            scripts/compile_r_cap_09_fixture.py \
+            tests/api/test_r_cap_09_decision_route.py \
+            tests/unit/test_brir_compiler.py \
+            tests/unit/test_decision_evaluation.py \
+            tests/unit/test_opa_evaluator.py \
+            tests/unit/test_rule_set_authority.py \
+            tests/integration/test_live_opa_decision_evaluation.py \
+            tests/integration/test_postgres_decision_evaluation.py
+
+      - name: Type-check R-CAP-09 implementation
+        run: |
+          mypy \
+            src/baobab_regulations/api/runtime.py \
+            src/baobab_regulations/application/ports/decision_idempotency.py \
+            src/baobab_regulations/application/ports/evaluator.py \
+            src/baobab_regulations/application/ports/repository.py \
+            src/baobab_regulations/application/ports/rule_sets.py \
+            src/baobab_regulations/application/services/decision_evaluation.py \
+            src/baobab_regulations/brir/compiler.py \
+            src/baobab_regulations/brir/models.py \
+            src/baobab_regulations/domain/rules/models.py \
+            src/baobab_regulations/infrastructure/evaluation/reference_canonical.py \
+            src/baobab_regulations/infrastructure/opa/client.py \
+            src/baobab_regulations/infrastructure/persistence/decision_idempotency_memory.py \
+            src/baobab_regulations/infrastructure/persistence/decision_idempotency_postgres.py \
+            src/baobab_regulations/infrastructure/persistence/memory.py \
+            src/baobab_regulations/infrastructure/persistence/postgres.py \
+            src/baobab_regulations/infrastructure/rule_sets.py
+
+      - name: Validate Shared decision contract and provider declaration
+        run: |
+          python .shared/scripts/validate-regulatory-decision-contracts.py
+          python .shared/scripts/capability_catalogue.py \
+            --contracts-root .shared/contracts \
+            validate-declaration .baobab/capability-provider.yaml \
+            --engine-id baobab-regulations \
+            --repository-root .
+
+      - name: Enforce R-CAP-07 through R-CAP-09 maturity
+        run: |
+          python scripts/validate_r_cap_07.py --repository-root .
+          python scripts/validate_r_cap_08.py --repository-root . --shared-root .shared
+          python scripts/validate_r_cap_09.py --repository-root .
+
+      - name: Run R-CAP-08/09 contract unit and API tests
+        run: |
+          pytest -q \
+            tests/contract/test_r_cap_08_decision_contract.py \
+            tests/unit/test_brir_compiler.py \
+            tests/unit/test_rule_set_authority.py \
+            tests/unit/test_opa_evaluator.py \
+            tests/unit/test_decision_evaluation.py \
+            tests/api/test_r_cap_09_decision_route.py
+
+      - name: Run live OPA Data API conformance
+        run: |
+          pytest -q -m live_opa \
+            tests/integration/test_live_opa_decision_evaluation.py
+
+      - name: Run PostgreSQL decision durability and RLS proof
+        run: |
+          pytest -q -m postgres \
+            tests/integration/test_postgres_decision_evaluation.py

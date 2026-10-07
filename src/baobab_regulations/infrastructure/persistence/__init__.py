@@ -1,5 +1,11 @@
 """Persistence adapters."""
 
+from baobab_regulations.infrastructure.persistence.decision_idempotency_memory import (
+    InMemoryDecisionEvaluationIdempotency,
+)
+from baobab_regulations.infrastructure.persistence.decision_idempotency_postgres import (
+    PostgresDecisionEvaluationIdempotency,
+)
 from baobab_regulations.infrastructure.persistence.event_outbox_postgres import (
     PostgresEventOutboxRepository,
 )
@@ -22,8 +28,10 @@ from baobab_regulations.infrastructure.persistence.sources_memory import (
 )
 
 __all__ = [
+    "InMemoryDecisionEvaluationIdempotency",
     "InMemoryDecisionRepository",
     "InMemoryEvidenceAssessmentIdempotency",
+    "PostgresDecisionEvaluationIdempotency",
     "PostgresEvidenceAssessmentIdempotency",
     "PostgresEventOutboxRepository",
     "InMemoryRequirementRepository",

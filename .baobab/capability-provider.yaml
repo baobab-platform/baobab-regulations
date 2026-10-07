@@ -6,7 +6,7 @@
 #   baobab-platform/shared/contracts/capability/v1/provider-declaration.schema.json
 # Governing decisions:
 #   ADR-SHARED-017 (EA-02), ADR-SHARED-027, ADR-SHARED-028,
-#   ADR-REG-0031, ADR-REG-0032, ADR-REG-0033
+#   ADR-REG-0031, ADR-REG-0032, ADR-REG-0033, ADR-REG-0034
 #
 # Answers ONE question: which canonical Baobab domain capabilities do this
 # engine's CapabilityProviders implement, or formally plan to implement?
@@ -53,8 +53,9 @@ providers:
   - provider_key: baobab-regulations.core
     name: Baobab Regulations core provider
     description: >-
-      First-party provider for the canonical Regulations RTD-06 capability
-      tranche. Repository implementation is partial and intentionally not
+      First-party provider for canonical Regulations documentary and
+      deterministic decision capabilities. Repository implementation is partial
+      and intentionally not
       activation evidence. The provider is eligible to pursue production
       certification, but is not currently certified, registered active, bound,
       granted or runtime-resolvable through the Control Plane.
@@ -69,6 +70,64 @@ providers:
         repository: baobab-platform/baobab-regulations
         decision: ADR-REG-0032
     support:
+      - capability_key: regulations.decision.evaluate
+        contract_versions: [1]
+        implementation_status: PARTIAL
+        provenance:
+          authority:
+            repository: baobab-platform/shared
+            decision: ADR-SHARED-028
+          source_revision: 1ac220728728932d560fa9edd88ec1faa32599ec
+        implementation_evidence:
+          - type: source
+            path: src/baobab_regulations/application/services/decision_evaluation.py
+            description: Canonical caller/context orchestration, bitemporal rule-set resolution, replay identity, integrity and enforcement-ceiling checks.
+          - type: source
+            path: src/baobab_regulations/brir/models.py
+            description: Typed bounded BRIR v1 executable subset with no raw target-language escape hatch.
+          - type: source
+            path: src/baobab_regulations/brir/compiler.py
+            description: Deterministic BRIR-to-Rego v1 compiler with semantic and artifact fingerprints.
+          - type: source
+            path: src/baobab_regulations/infrastructure/opa/client.py
+            description: Production OPA Data API adapter with bundle readiness and undefined/protocol/runtime failure separation.
+          - type: source
+            path: src/baobab_regulations/infrastructure/rule_sets.py
+            description: Exact pinned, bitemporal, assurance-aware and tenant-scoped rule-set authority.
+          - type: source
+            path: src/baobab_regulations/infrastructure/persistence/decision_idempotency_postgres.py
+            description: Durable tenant-scoped command idempotency and semantic replay authority.
+          - type: source
+            path: migrations/000005_regulatory_decision_evaluations.sql
+            description: Canonical decision snapshots, replay uniqueness and rule-set scope/RLS persistence.
+          - type: source
+            path: src/baobab_regulations/api/routes.py
+            description: Authenticated canonical POST /decisions/evaluate route.
+          - type: contract-test
+            path: tests/contract/test_r_cap_08_decision_contract.py
+            description: Exact Shared decision request/response contract proof retained from R-CAP-08.
+          - type: test
+            path: tests/unit/test_brir_compiler.py
+            description: BRIR validation, deterministic compilation, applicability and target-language isolation proof.
+          - type: test
+            path: tests/unit/test_opa_evaluator.py
+            description: OPA readiness, fingerprint, undefined, protocol and runtime failure proof.
+          - type: test
+            path: tests/unit/test_decision_evaluation.py
+            description: Decision orchestration, replay, tenant integrity, enforcement ceiling and reference-evaluator differential proof.
+          - type: test
+            path: tests/unit/test_rule_set_authority.py
+            description: Bitemporal, content-pin, assurance and tenant rule-set authority proof.
+          - type: test
+            path: tests/api/test_r_cap_09_decision_route.py
+            description: Authenticated route and ProblemDetails failure-surface proof.
+          - type: integration-test
+            path: tests/integration/test_live_opa_decision_evaluation.py
+            description: Checksum-pinned real OPA Data API execution of compiler-generated BRIR-derived Rego.
+          - type: integration-test
+            path: tests/integration/test_postgres_decision_evaluation.py
+            description: PostgreSQL durability, semantic replay, concurrency and RLS proof.
+
       - capability_key: regulations.evidence.assess
         contract_versions: [1]
         implementation_status: PARTIAL
@@ -143,20 +202,6 @@ planned_capabilities:
       authority:
         repository: baobab-platform/baobab-regulations
         decision: ADR-REG-0017
-
-  - capability_key: regulations.decision.evaluate
-    proposal_status: CONTRACTED
-    description: >-
-      Shared ADR-SHARED-028 now defines the canonical deterministic
-      RegulatoryDecision request/response contract. R-CAP-08 adopts that
-      contract locally but does not claim provider implementation; R-CAP-09
-      owns the production evaluator path.
-    target_provider_key: baobab-regulations.core
-    provenance:
-      authority:
-        repository: baobab-platform/shared
-        decision: ADR-SHARED-028
-      source_revision: 1ac220728728932d560fa9edd88ec1faa32599ec
 
   - proposed_key: regulations.change.subscribe
     proposal_status: PROPOSED

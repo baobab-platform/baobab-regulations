@@ -18,7 +18,25 @@ from baobab_regulations.application.ports.control_plane import (
     ValidatorCredentialUnavailableError,
     ValidatorTokenProviderPort,
 )
-from baobab_regulations.application.ports.evaluator import RegulatoryPolicyEvaluatorPort
+from baobab_regulations.application.ports.decision_idempotency import (
+    DecisionCommit,
+    DecisionEvaluationIdempotencyPort,
+    DecisionIdempotencyConflictError,
+    DecisionIdempotencyIntegrityError,
+    DecisionIdempotencyUnavailableError,
+    DecisionReplay,
+)
+from baobab_regulations.application.ports.evaluator import (
+    EvaluatorNotReadyError,
+    EvaluatorProtocolError,
+    EvaluatorRuntimeError,
+    EvaluatorUndefinedError,
+    LegacyRegulatoryPolicyEvaluatorPort,
+    RegulatoryEvaluationInput,
+    RegulatoryEvaluationResult,
+    RegulatoryPolicyEvaluatorPort,
+    ResolvedRuleSet,
+)
 from baobab_regulations.application.ports.events import EventPublicationMetadata
 from baobab_regulations.application.ports.evidence_assessment import (
     DocumentaryEvidenceAssessorPort,
@@ -44,6 +62,13 @@ from baobab_regulations.application.ports.repository import (
     DecisionRepositoryPort,
     RuleSetRepositoryPort,
 )
+from baobab_regulations.application.ports.rule_sets import (
+    RuleSetAuthorityPort,
+    RuleSetAuthorityUnavailableError,
+    RuleSetConflictError,
+    RuleSetIntegrityError,
+    RuleSetNotFoundError,
+)
 from baobab_regulations.application.ports.requirements import (
     RequirementAuthorityUnavailableError,
     RequirementLookup,
@@ -59,6 +84,12 @@ __all__ = [
     "ContextAuthorityUnavailableError",
     "ContextNotFoundError",
     "CanonicalEventPublisherPort",
+    "DecisionCommit",
+    "DecisionEvaluationIdempotencyPort",
+    "DecisionIdempotencyConflictError",
+    "DecisionIdempotencyIntegrityError",
+    "DecisionIdempotencyUnavailableError",
+    "DecisionReplay",
     "DecisionRepositoryPort",
     "DocumentaryEvidenceAssessorPort",
     "DocumentaryEvidenceAssessorUnavailableError",
@@ -66,6 +97,10 @@ __all__ = [
     "EventOutboxIntegrityError",
     "EventOutboxRecord",
     "EventOutboxRepositoryPort",
+    "EvaluatorNotReadyError",
+    "EvaluatorProtocolError",
+    "EvaluatorRuntimeError",
+    "EvaluatorUndefinedError",
     "EventPublicationMetadata",
     "EvidenceAssessmentIdentity",
     "EvidenceAssessmentIdempotencyPort",
@@ -74,11 +109,20 @@ __all__ = [
     "IdempotencyConflictError",
     "IdempotencyIntegrityError",
     "IdempotencyReplay",
+    "LegacyRegulatoryPolicyEvaluatorPort",
+    "RegulatoryEvaluationInput",
+    "RegulatoryEvaluationResult",
     "RegulatoryPolicyEvaluatorPort",
+    "ResolvedRuleSet",
     "RequirementAuthorityUnavailableError",
     "RequirementLookup",
     "RequirementLookupStatus",
     "RequirementRepositoryPort",
+    "RuleSetAuthorityPort",
+    "RuleSetAuthorityUnavailableError",
+    "RuleSetConflictError",
+    "RuleSetIntegrityError",
+    "RuleSetNotFoundError",
     "RuleSetRepositoryPort",
     "TrustedPlatformContext",
     "ValidatorCredentialUnavailableError",

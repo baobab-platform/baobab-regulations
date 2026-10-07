@@ -6,6 +6,7 @@ this module is the production path once migrations are applied.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Any
 
@@ -81,11 +82,17 @@ class PostgresRuleSetRepository:
             INSERT INTO regulatory_rule_sets (
                 rule_set_id, corridor_profile, assurance_state, fingerprint,
                 legal_valid_from, legal_valid_to, knowledge_from, knowledge_to,
+                scope, tenant_id, brir_payload,
+                compiler_id, compiler_version, compiled_target,
+                compiled_entrypoint, compiled_artifact_fingerprint,
                 derived_rule_ids, notes
             ) VALUES (
                 $1, $2, $3, $4,
                 $5, $6, $7, $8,
-                $9::jsonb, $10
+                $9, $10, $11::jsonb,
+                $12, $13, $14,
+                $15, $16,
+                $17::jsonb, $18
             )
             ON CONFLICT (rule_set_id) DO UPDATE SET
                 corridor_profile = EXCLUDED.corridor_profile,
@@ -95,10 +102,23 @@ class PostgresRuleSetRepository:
                 legal_valid_to = EXCLUDED.legal_valid_to,
                 knowledge_from = EXCLUDED.knowledge_from,
                 knowledge_to = EXCLUDED.knowledge_to,
+                scope = EXCLUDED.scope,
+                tenant_id = EXCLUDED.tenant_id,
+                brir_payload = EXCLUDED.brir_payload,
+                compiler_id = EXCLUDED.compiler_id,
+                compiler_version = EXCLUDED.compiler_version,
+                compiled_target = EXCLUDED.compiled_target,
+                compiled_entrypoint = EXCLUDED.compiled_entrypoint,
+                compiled_artifact_fingerprint = EXCLUDED.compiled_artifact_fingerprint,
                 derived_rule_ids = EXCLUDED.derived_rule_ids,
                 notes = EXCLUDED.notes
         """
-        async with self._pool.acquire() as conn:
+        async with self._pool.acquire() as conn, conn.transaction():
+            if record.scope == "tenant" and record.tenant_id is not None:
+                await conn.execute(
+                    "SELECT set_config('baobab.tenant_id', $1, true)",
+                    record.tenant_id,
+                )
             await conn.execute(
                 sql,
                 record.rule_set_id,
@@ -109,13 +129,39 @@ class PostgresRuleSetRepository:
                 record.legal_valid_to,
                 record.knowledge_from,
                 record.knowledge_to,
-                [str(x) for x in record.derived_rule_ids],
+                record.scope,
+                record.tenant_id,
+                (
+                    json.dumps(
+                        record.brir_payload,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    )
+                    if record.brir_payload is not None
+                    else None
+                ),
+                record.compiler_id,
+                record.compiler_version,
+                record.compiled_target,
+                record.compiled_entrypoint,
+                record.compiled_artifact_fingerprint,
+                json.dumps([str(x) for x in record.derived_rule_ids]),
                 record.notes,
             )
 
-    async def get(self, rule_set_id: str) -> RuleSetRecord | None:
+    async def get(
+        self,
+        rule_set_id: str,
+        *,
+        tenant_id: str | None = None,
+    ) -> RuleSetRecord | None:
         sql = "SELECT * FROM regulatory_rule_sets WHERE rule_set_id = $1"
-        async with self._pool.acquire() as conn:
+        async with self._pool.acquire() as conn, conn.transaction():
+            if tenant_id is not None:
+                await conn.execute(
+                    "SELECT set_config('baobab.tenant_id', $1, true)",
+                    tenant_id,
+                )
             row = await conn.fetchrow(sql, rule_set_id)
         if row is None:
             return None
@@ -138,7 +184,8 @@ class PostgresRuleSetRepository:
             LIMIT 1
         """
         async with self._pool.acquire() as conn:
-            return await conn.fetchval(sql, corridor_profile, knowledge_time)
+            value = await conn.fetchval(sql, corridor_profile, knowledge_time)
+        return str(value) if value is not None else None
 
 
 def _row_to_decision(row: dict[str, Any]) -> RegulatoryDecision:
@@ -165,7 +212,20 @@ def _row_to_decision(row: dict[str, Any]) -> RegulatoryDecision:
     )
 
 
+def _decode_jsonb(value: Any) -> Any:
+    if isinstance(value, (str, bytes, bytearray)):
+        return json.loads(value)
+    return value
+
+
 def _row_to_rule_set(row: dict[str, Any]) -> RuleSetRecord:
+    brir_payload = _decode_jsonb(row.get("brir_payload"))
+    derived_rule_ids = _decode_jsonb(row.get("derived_rule_ids")) or []
+    if brir_payload is not None and not isinstance(brir_payload, dict):
+        raise TypeError("regulatory_rule_sets.brir_payload must decode to an object")
+    if not isinstance(derived_rule_ids, list):
+        raise TypeError("regulatory_rule_sets.derived_rule_ids must decode to an array")
+
     return RuleSetRecord(
         rule_set_id=row["rule_set_id"],
         corridor_profile=row["corridor_profile"],
@@ -175,6 +235,14 @@ def _row_to_rule_set(row: dict[str, Any]) -> RuleSetRecord:
         legal_valid_to=row.get("legal_valid_to"),
         knowledge_from=row["knowledge_from"],
         knowledge_to=row.get("knowledge_to"),
-        derived_rule_ids=[RegulatoryId(x) for x in (row.get("derived_rule_ids") or [])],
+        brir_payload=brir_payload,
+        compiler_id=row.get("compiler_id"),
+        compiler_version=row.get("compiler_version"),
+        compiled_target=row.get("compiled_target"),
+        compiled_entrypoint=row.get("compiled_entrypoint"),
+        compiled_artifact_fingerprint=row.get("compiled_artifact_fingerprint"),
+        derived_rule_ids=[RegulatoryId(str(x)) for x in derived_rule_ids],
+        scope=row.get("scope") or "platform",
+        tenant_id=row.get("tenant_id"),
         notes=row.get("notes"),
     )

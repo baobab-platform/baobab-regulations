@@ -13,10 +13,11 @@ from pathlib import Path
 
 import yaml
 
-CANONICAL_SUPPORT = {
+R_CAP_07_BASE_SUPPORT = {
     "regulations.evidence.assess",
     "regulations.requirement.resolve",
 }
+FOLLOW_ON_SUPPORT = {"regulations.decision.evaluate"}
 PROPOSED_ONLY = {
     "regulations.change.subscribe",
     "regulations.context.resolve",
@@ -75,8 +76,14 @@ def main() -> None:
         for item in support
         if isinstance(item, dict)
     }
-    if support_keys != CANONICAL_SUPPORT:
-        fail(f"support must be exactly {sorted(CANONICAL_SUPPORT)}")
+    if not R_CAP_07_BASE_SUPPORT.issubset(support_keys):
+        fail(
+            "R-CAP-07 base support disappeared: "
+            f"{sorted(R_CAP_07_BASE_SUPPORT - support_keys)}"
+        )
+    unexpected = support_keys - R_CAP_07_BASE_SUPPORT - FOLLOW_ON_SUPPORT
+    if unexpected:
+        fail(f"unexpected Regulations support keys: {sorted(unexpected)}")
 
     for item in support:
         if not isinstance(item, dict):
@@ -118,10 +125,15 @@ def main() -> None:
         for item in planned
         if isinstance(item, dict) and item.get("proposal_status") == "CONTRACTED"
     }
-    if contracted != {"regulations.decision.evaluate"}:
+    expected_contracted = (
+        set()
+        if "regulations.decision.evaluate" in support_keys
+        else {"regulations.decision.evaluate"}
+    )
+    if contracted != expected_contracted:
         fail(
-            "R-CAP-08 follow-on must keep only regulations.decision.evaluate "
-            f"as CONTRACTED planned capability: {sorted(contracted)}"
+            "decision.evaluate must be CONTRACTED until R-CAP-09 provider support, "
+            f"then leave planned_capabilities: {sorted(contracted)}"
         )
 
     proposed = {
@@ -134,7 +146,7 @@ def main() -> None:
 
     print(
         "R-CAP-07 provider readiness passed: active repository, "
-        "baobab-regulations.core, two PARTIAL canonical supports, "
+        "baobab-regulations.core, R-CAP-07 base support plus governed follow-ons, "
         "zero IMPLEMENTED/runtime activation claims"
     )
 

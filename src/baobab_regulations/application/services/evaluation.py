@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from baobab_regulations.application.ports.evaluator import RegulatoryPolicyEvaluatorPort
+from baobab_regulations.application.ports.evaluator import LegacyRegulatoryPolicyEvaluatorPort
 from baobab_regulations.application.ports.repository import DecisionRepositoryPort
 from baobab_regulations.domain.context.models import RegulatoryContext
 from baobab_regulations.domain.decisions.models import RegulatoryDecision
@@ -18,7 +18,7 @@ class EvaluationService:
 
     def __init__(
         self,
-        evaluator: RegulatoryPolicyEvaluatorPort,
+        evaluator: LegacyRegulatoryPolicyEvaluatorPort,
         decisions: DecisionRepositoryPort,
     ) -> None:
         self._evaluator = evaluator

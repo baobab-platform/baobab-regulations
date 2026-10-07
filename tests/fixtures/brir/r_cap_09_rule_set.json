@@ -1,0 +1,87 @@
+{
+  "brir_version": "baobab.regulations.brir/v1",
+  "rule_set_id": "ruleset_ug_za_coffee_2026_10",
+  "rules": [
+    {
+      "rule_version_reference": {
+        "owner_engine_id": "baobab-regulations",
+        "object_type": "REGULATORY_RULE_VERSION",
+        "object_id": "regrule_phyto_ugza_v1",
+        "reference_mode": "IDENTITY_PINNED",
+        "scope": "platform"
+      },
+      "legal_basis_reference": {
+        "owner_engine_id": "baobab-regulations",
+        "object_type": "REGULATORY_PROVISION_VERSION",
+        "object_id": "regprov_sps_phyto_ugza_v1",
+        "reference_mode": "IDENTITY_PINNED",
+        "scope": "platform"
+      },
+      "when_all": [
+        {
+          "fact_code": "ORIGIN_COUNTRY",
+          "operator": "EQ",
+          "value": "UG"
+        },
+        {
+          "fact_code": "IMPORT_COUNTRY",
+          "operator": "EQ",
+          "value": "ZA"
+        },
+        {
+          "fact_code": "HS_CODE",
+          "operator": "EXISTS",
+          "value": null
+        }
+      ],
+      "requirement_fact_code": "PHYTOSANITARY_CERTIFICATE_PRESENT",
+      "expected_value": true,
+      "failure_reason_code": "PHYTOSANITARY_CERTIFICATE_REQUIRED",
+      "failure_message": "A phytosanitary certificate is required for the applicable shipment profile."
+    },
+    {
+      "rule_version_reference": {
+        "owner_engine_id": "baobab-regulations",
+        "object_type": "REGULATORY_RULE_VERSION",
+        "object_id": "regrule_origin_afcfta_v1",
+        "reference_mode": "IDENTITY_PINNED",
+        "scope": "platform"
+      },
+      "legal_basis_reference": {
+        "owner_engine_id": "baobab-regulations",
+        "object_type": "REGULATORY_PROVISION_VERSION",
+        "object_id": "regprov_origin_afcfta_v1",
+        "reference_mode": "IDENTITY_PINNED",
+        "scope": "platform"
+      },
+      "when_all": [
+        {
+          "fact_code": "ORIGIN_COUNTRY",
+          "operator": "EQ",
+          "value": "UG"
+        },
+        {
+          "fact_code": "IMPORT_COUNTRY",
+          "operator": "EQ",
+          "value": "ZA"
+        },
+        {
+          "fact_code": "ORIGIN_REGIME",
+          "operator": "EQ",
+          "value": "AfCFTA"
+        }
+      ],
+      "requirement_fact_code": "ORIGIN_CERTIFICATE_PRESENT",
+      "expected_value": true,
+      "failure_reason_code": "ORIGIN_CERTIFICATE_REQUIRED",
+      "failure_message": "A qualifying origin certificate is required for the claimed origin regime."
+    }
+  ],
+  "success_reason_code": "REFERENCE_PROFILE_SATISFIED",
+  "success_message": "All applicable executable requirements in the pinned BRIR rule set are satisfied.",
+  "allow_disposition_code": "ALLOW",
+  "hold_disposition_code": "HOLD",
+  "enforcement_class": "E1",
+  "not_applicable_reason_code": "NO_APPLICABLE_RULE",
+  "not_applicable_message": "No executable rule in the pinned BRIR rule set applies to the supplied facts."
+}
