@@ -118,6 +118,22 @@ def evaluate_readiness(root: Path) -> dict[str, Any]:
             if not (root / path).is_file():
                 raise ReadinessInvariantError(f"{capability}: local evidence not found: {path}")
         claim = support_by_key[capability]
+        declared_evidence = claim.get("implementation_evidence")
+        if not isinstance(declared_evidence, list) or not declared_evidence:
+            raise ReadinessInvariantError(
+                f"{capability}: provider declaration is missing implementation evidence"
+            )
+        declared_paths = {
+            item.get("path")
+            for item in declared_evidence
+            if isinstance(item, dict) and isinstance(item.get("path"), str)
+        }
+        missing_declared = set(sources) - declared_paths
+        if missing_declared:
+            raise ReadinessInvariantError(
+                f"{capability}: provider implementation evidence omits local proof: "
+                f"{sorted(missing_declared)}"
+            )
         if claim.get("implementation_status") != "PARTIAL":
             raise ReadinessInvariantError(
                 f"{capability}: IMPLEMENTED is unsupported without independent "
