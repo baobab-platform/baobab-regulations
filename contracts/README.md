@@ -5,8 +5,7 @@ This directory documents contract dependencies consumed or published by
 
 Canonical cross-repository contracts are governed in
 `baobab-platform/shared`. This repository must pin and consume those
-contracts when runtime implementation begins; it must not fork their wire
-schemas locally.
+contracts at runtime; it must not fork their wire schemas locally.
 
 ## Consumed from Shared
 
@@ -95,14 +94,18 @@ shape as the production platform contract.
 
 ## Runtime adoption status
 
-R-CAP-01 and R-CAP-02 now provide runtime adapters for the pinned Shared RTD-06
+R-CAP-01 and R-CAP-02 provide runtime adapters for the pinned Shared RTD-06
 `requirementResolveRequest/Response` and `documentEvidenceAssessmentRequest/Result`
-surfaces. Shared remains the wire-contract authority; the local Pydantic models
-exist only to execute those canonical contracts.
+surfaces. R-CAP-04 exposes the canonical authenticated HTTP operations and
+implements caller-bound Control Plane `context_id` validation. Shared remains
+the wire-contract authority; the local Pydantic/FastAPI models only execute it.
 
-Provider support is still intentionally undeclared until authenticated routes,
-durable assessment idempotency/persistence and required publication/runtime
-evidence are implemented by later R-CAP gates.
+Live route activation remains separate from route implementation: Regulations
+still needs its governed workload authentication adapter and a registered
+`baobab-regulations` validator workload permitted to call Control Plane
+`context:validate` for the `baobab-regulations` audience. Until that
+cross-repository identity allocation, durable R-CAP-05 command persistence and
+R-CAP-06 publication evidence exist, provider support remains undeclared.
 
 Domain models under `src/baobab_regulations/domain/` remain the local source of
 truth for Regulations-owned internal semantics. Do not redefine Control Plane,

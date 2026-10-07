@@ -3,8 +3,10 @@
 from baobab_regulations.application.ports.context_authority import (
     AuthenticatedCaller,
     ContextAccessDeniedError,
+    ContextAuthenticationError,
     ContextAuthorityPort,
     ContextAuthorityUnavailableError,
+    ContextNotFoundError,
 )
 from baobab_regulations.application.ports.requirements import (
     RequirementAuthorityUnavailableError,
@@ -16,6 +18,18 @@ from baobab_regulations.contracts.rtd06 import (
     RequirementResolveRequest,
     RequirementResolveResponse,
 )
+
+
+class RequirementResolutionAuthenticationError(PermissionError):
+    """The caller token could not be independently verified for the context."""
+
+    code = "REGULATIONS_REQUIREMENT_AUTHENTICATION_FAILED"
+
+
+class RequirementResolutionContextNotFoundError(LookupError):
+    """Context is unavailable to this caller without revealing why."""
+
+    code = "REGULATIONS_CONTEXT_NOT_FOUND"
 
 
 class RequirementResolutionAccessDeniedError(PermissionError):
@@ -76,6 +90,14 @@ class RequirementResolutionService:
                 context_id=request.context_id,
                 caller=caller,
             )
+        except ContextAuthenticationError as exc:
+            raise RequirementResolutionAuthenticationError(
+                "caller token could not be verified for the supplied context_id"
+            ) from exc
+        except ContextNotFoundError as exc:
+            raise RequirementResolutionContextNotFoundError(
+                "supplied context_id is unavailable to this caller"
+            ) from exc
         except ContextAccessDeniedError as exc:
             raise RequirementResolutionAccessDeniedError(
                 "caller is not authorised for the supplied context_id"
@@ -145,6 +167,8 @@ class RequirementResolutionService:
 
 __all__ = [
     "RequirementResolutionAccessDeniedError",
+    "RequirementResolutionAuthenticationError",
+    "RequirementResolutionContextNotFoundError",
     "RequirementResolutionConflictError",
     "RequirementResolutionIntegrityError",
     "RequirementResolutionNotFoundError",

@@ -1,11 +1,22 @@
 """Protocol interfaces — provider-neutral boundaries (ADR-REG-0005, 0016, 0018)."""
 
+from baobab_regulations.application.ports.authentication import (
+    WorkloadAuthenticationError,
+    WorkloadAuthenticationUnavailableError,
+    WorkloadAuthenticatorPort,
+)
 from baobab_regulations.application.ports.context_authority import (
     AuthenticatedCaller,
     ContextAccessDeniedError,
+    ContextAuthenticationError,
     ContextAuthorityPort,
     ContextAuthorityUnavailableError,
+    ContextNotFoundError,
     TrustedPlatformContext,
+)
+from baobab_regulations.application.ports.control_plane import (
+    ValidatorCredentialUnavailableError,
+    ValidatorTokenProviderPort,
 )
 from baobab_regulations.application.ports.evaluator import RegulatoryPolicyEvaluatorPort
 from baobab_regulations.application.ports.evidence_assessment import (
@@ -33,8 +44,10 @@ from baobab_regulations.application.ports.requirements import (
 __all__ = [
     "AuthenticatedCaller",
     "ContextAccessDeniedError",
+    "ContextAuthenticationError",
     "ContextAuthorityPort",
     "ContextAuthorityUnavailableError",
+    "ContextNotFoundError",
     "DecisionRepositoryPort",
     "DocumentaryEvidenceAssessorPort",
     "DocumentaryEvidenceAssessorUnavailableError",
@@ -50,4 +63,9 @@ __all__ = [
     "RequirementRepositoryPort",
     "RuleSetRepositoryPort",
     "TrustedPlatformContext",
+    "ValidatorCredentialUnavailableError",
+    "ValidatorTokenProviderPort",
+    "WorkloadAuthenticationError",
+    "WorkloadAuthenticationUnavailableError",
+    "WorkloadAuthenticatorPort",
 ]

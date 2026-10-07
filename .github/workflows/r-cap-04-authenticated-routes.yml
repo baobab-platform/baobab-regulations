@@ -1,0 +1,107 @@
+name: R-CAP-04 Authenticated Routes
+
+on:
+  pull_request:
+    paths:
+      - "src/baobab_regulations/api/**"
+      - "src/baobab_regulations/application/ports/authentication.py"
+      - "src/baobab_regulations/application/ports/context_authority.py"
+      - "src/baobab_regulations/application/ports/control_plane.py"
+      - "src/baobab_regulations/application/services/requirement_resolution.py"
+      - "src/baobab_regulations/application/services/evidence_assessment.py"
+      - "src/baobab_regulations/infrastructure/control_plane/**"
+      - "tests/api/test_rtd06_routes.py"
+      - "tests/unit/test_control_plane_context_authority.py"
+      - "tests/contract/test_rtd06_http_openapi.py"
+      - "pyproject.toml"
+      - ".github/workflows/r-cap-04-authenticated-routes.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/baobab_regulations/api/**"
+      - "src/baobab_regulations/application/ports/authentication.py"
+      - "src/baobab_regulations/application/ports/context_authority.py"
+      - "src/baobab_regulations/application/ports/control_plane.py"
+      - "src/baobab_regulations/application/services/requirement_resolution.py"
+      - "src/baobab_regulations/application/services/evidence_assessment.py"
+      - "src/baobab_regulations/infrastructure/control_plane/**"
+      - "tests/api/test_rtd06_routes.py"
+      - "tests/unit/test_control_plane_context_authority.py"
+      - "tests/contract/test_rtd06_http_openapi.py"
+      - "pyproject.toml"
+      - ".github/workflows/r-cap-04-authenticated-routes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SHARED_REF: c2c2fdeaaaab42d666d9d0502824f65d504356a2
+
+jobs:
+  authenticated-routes:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout Regulations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact Shared RTD-06 authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: baobab-platform/shared
+          ref: ${{ env.SHARED_REF }}
+          path: .shared
+          token: ${{ secrets.SHARED_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@ad3497abcd142e169a10aac37abd5175c44f33c4 # v7.0.0+6
+        with:
+          python-version: "3.14"
+
+      - name: Install R-CAP-04 test runtime
+        run: |
+          python -m pip install --disable-pip-version-check -e .
+          python -m pip install --disable-pip-version-check \
+            "pytest>=9.0.3,<10" \
+            "pytest-asyncio>=1.0,<2" \
+            "mypy>=1.13,<2" \
+            "ruff>=0.7,<1"
+
+      - name: Lint R-CAP-04 implementation
+        run: |
+          ruff check \
+            src/baobab_regulations/api \
+            src/baobab_regulations/application/ports/authentication.py \
+            src/baobab_regulations/application/ports/context_authority.py \
+            src/baobab_regulations/application/ports/control_plane.py \
+            src/baobab_regulations/application/services/requirement_resolution.py \
+            src/baobab_regulations/application/services/evidence_assessment.py \
+            src/baobab_regulations/infrastructure/control_plane \
+            tests/api/test_rtd06_routes.py \
+            tests/unit/test_control_plane_context_authority.py \
+            tests/contract/test_rtd06_http_openapi.py
+
+      - name: Type-check R-CAP-04 implementation
+        run: |
+          mypy \
+            src/baobab_regulations/api \
+            src/baobab_regulations/application/ports/authentication.py \
+            src/baobab_regulations/application/ports/context_authority.py \
+            src/baobab_regulations/application/ports/control_plane.py \
+            src/baobab_regulations/application/services/requirement_resolution.py \
+            src/baobab_regulations/application/services/evidence_assessment.py \
+            src/baobab_regulations/infrastructure/control_plane
+
+      - name: Run R-CAP-01 through R-CAP-04 regression and contract tests
+        run: |
+          pytest -q \
+            tests/api/test_health.py \
+            tests/api/test_rtd06_routes.py \
+            tests/unit/test_requirement_resolution.py \
+            tests/unit/test_evidence_assessment.py \
+            tests/unit/test_control_plane_context_authority.py \
+            tests/contract/test_rtd06_requirement_resolve_contract.py \
+            tests/contract/test_rtd06_evidence_assessment_contract.py \
+            tests/contract/test_rtd06_http_openapi.py

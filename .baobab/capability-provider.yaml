@@ -21,11 +21,12 @@
 #   Two narrow RTD-06 capabilities are canonical and remain DRAFT:
 #     regulations.requirement.resolve
 #     regulations.evidence.assess
-#   R-CAP-01 and R-CAP-02 implement provider-neutral application adapters for
-#   requirement.resolve and evidence.assess. Authenticated public routes,
-#   durable persistence/idempotency, event outbox publication and provider
-#   promotion remain later increments. Both capabilities therefore remain
-#   capability_key + CONTRACTED only.
+#   R-CAP-01 and R-CAP-02 implement provider-neutral application adapters.
+#   R-CAP-04 adds the exact authenticated/context-bound HTTP routes and
+#   Control Plane caller-bound context-validation adapter. Durable
+#   persistence/idempotency, event outbox publication, validator workload
+#   activation and provider promotion remain later/cross-repository gates.
+#   Both capabilities therefore remain capability_key + CONTRACTED only.
 #   The broader Regulations capabilities remain proposed_key + PROPOSED.
 #   No providers[].support entry is justified yet.
 #
@@ -41,11 +42,11 @@ engine:
   # Repository name as engine identity (ADR-SHARED-012).
   engine_id: baobab-regulations
 
-# No providers[] yet. R-CAP-01/R-CAP-02 implement the two canonical RTD-06
-# application adapters, but authenticated route integration, durable command
-# persistence/idempotency, outbox publication and provider-readiness promotion
-# remain governed later increments. The offline ReferenceEvaluator and bounded
-# projection assessor are implementation evidence, not declared providers.
+# No providers[] yet. R-CAP-01/R-CAP-02/R-CAP-04 now cover the canonical
+# application adapters plus authenticated/context-bound HTTP surface. Durable
+# command persistence/idempotency, outbox publication, the Shared/IAM
+# baobab-regulations validator workload allocation, and provider-readiness
+# promotion remain governed gates. Implementation evidence is not activation.
 
 planned_capabilities:
   - capability_key: regulations.evidence.assess
@@ -53,7 +54,7 @@ planned_capabilities:
     description: >-
       Assess bounded Trade Docs documentary facts against one pinned
       Regulations requirement using the canonical RTD-06 Shared contract.
-      R-CAP-02 application adapter implemented; no provider support is claimed yet.
+      R-CAP-02 adapter and R-CAP-04 authenticated route implemented; no provider support is claimed yet.
     provenance:
       authority:
         repository: baobab-platform/shared
@@ -64,7 +65,7 @@ planned_capabilities:
     description: >-
       Resolve one exact pinned Regulations-owned documentary, permit or
       evidence requirement projection using the canonical RTD-06 Shared
-      contract. Contracted vocabulary only: no provider support is claimed yet.
+      contract. R-CAP-01 adapter and R-CAP-04 authenticated route implemented; no provider support is claimed yet.
     provenance:
       authority:
         repository: baobab-platform/shared
