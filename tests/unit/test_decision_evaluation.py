@@ -55,7 +55,8 @@ BRIR = BrirRuleSet.model_validate(
 )
 ARTIFACT = RegoV1Compiler().compile(BRIR)
 RULE_FP = ARTIFACT.rule_set_fingerprint
-COMMAND_ID = "r-cap-09-decision-0001"\nSECOND_COMMAND_ID = "r-cap-09-decision-0002"
+COMMAND_ID = "r-cap-09-decision-0001"
+SECOND_COMMAND_ID = "r-cap-09-decision-0002"
 
 
 class FakeContextAuthority:
