@@ -1,0 +1,114 @@
+name: R-CAP-05 Durable Assessments
+
+on:
+  pull_request:
+    paths:
+      - "migrations/000003_regulatory_evidence_assessments.sql"
+      - "migrations/README.md"
+      - "src/baobab_regulations/application/ports/idempotency.py"
+      - "src/baobab_regulations/application/services/evidence_assessment.py"
+      - "src/baobab_regulations/infrastructure/persistence/idempotency_memory.py"
+      - "src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py"
+      - "src/baobab_regulations/infrastructure/persistence/__init__.py"
+      - "tests/unit/test_evidence_assessment.py"
+      - "tests/integration/test_postgres_evidence_assessment_idempotency.py"
+      - "pyproject.toml"
+      - ".github/workflows/r-cap-05-durable-assessments.yml"
+  push:
+    branches: [main]
+    paths:
+      - "migrations/000003_regulatory_evidence_assessments.sql"
+      - "migrations/README.md"
+      - "src/baobab_regulations/application/ports/idempotency.py"
+      - "src/baobab_regulations/application/services/evidence_assessment.py"
+      - "src/baobab_regulations/infrastructure/persistence/idempotency_memory.py"
+      - "src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py"
+      - "src/baobab_regulations/infrastructure/persistence/__init__.py"
+      - "tests/unit/test_evidence_assessment.py"
+      - "tests/integration/test_postgres_evidence_assessment_idempotency.py"
+      - "pyproject.toml"
+      - ".github/workflows/r-cap-05-durable-assessments.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SHARED_REF: c2c2fdeaaaab42d666d9d0502824f65d504356a2
+  R_CAP_05_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/baobab_regulations_test
+
+jobs:
+  durable-assessments:
+    runs-on: ubuntu-26.04
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: baobab_regulations_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d baobab_regulations_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+    steps:
+      - name: Checkout Regulations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact Shared RTD-06 authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: baobab-platform/shared
+          ref: ${{ env.SHARED_REF }}
+          path: .shared
+          token: ${{ secrets.SHARED_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@ad3497abcd142e169a10aac37abd5175c44f33c4 # v7.0.0+6
+        with:
+          python-version: "3.14"
+
+      - name: Install R-CAP-05 test runtime
+        run: |
+          python -m pip install --disable-pip-version-check -e .
+          python -m pip install --disable-pip-version-check \
+            "pytest>=9.0.3,<10" \
+            "pytest-asyncio>=1.0,<2" \
+            "mypy>=1.13,<2" \
+            "ruff>=0.7,<1"
+
+      - name: Lint R-CAP-05 implementation
+        run: |
+          ruff check \
+            src/baobab_regulations/application/ports/idempotency.py \
+            src/baobab_regulations/application/services/evidence_assessment.py \
+            src/baobab_regulations/infrastructure/persistence/idempotency_memory.py \
+            src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py \
+            tests/unit/test_evidence_assessment.py \
+            tests/integration/test_postgres_evidence_assessment_idempotency.py
+
+      - name: Type-check R-CAP-05 implementation
+        run: |
+          mypy \
+            src/baobab_regulations/application/ports/idempotency.py \
+            src/baobab_regulations/application/services/evidence_assessment.py \
+            src/baobab_regulations/infrastructure/persistence/idempotency_memory.py \
+            src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py
+
+      - name: Run unit and RTD-06 regressions
+        run: |
+          pytest -q \
+            tests/unit/test_evidence_assessment.py \
+            tests/api/test_rtd06_routes.py \
+            tests/contract/test_rtd06_evidence_assessment_contract.py
+
+      - name: Run PostgreSQL durability and RLS tests
+        run: |
+          pytest -q -m postgres \
+            tests/integration/test_postgres_evidence_assessment_idempotency.py

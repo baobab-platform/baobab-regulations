@@ -23,8 +23,9 @@
 #     regulations.evidence.assess
 #   R-CAP-01 and R-CAP-02 implement provider-neutral application adapters.
 #   R-CAP-04 adds the exact authenticated/context-bound HTTP routes and
-#   Control Plane caller-bound context-validation adapter. Durable
-#   persistence/idempotency, event outbox publication, validator workload
+#   Control Plane caller-bound context-validation adapter. R-CAP-05 adds
+#   durable PostgreSQL assessment snapshots, concurrency-safe tenant-scoped
+#   idempotency and RLS. Event outbox publication, validator workload
 #   activation and provider promotion remain later/cross-repository gates.
 #   Both capabilities therefore remain capability_key + CONTRACTED only.
 #   The broader Regulations capabilities remain proposed_key + PROPOSED.
@@ -42,11 +43,11 @@ engine:
   # Repository name as engine identity (ADR-SHARED-012).
   engine_id: baobab-regulations
 
-# No providers[] yet. R-CAP-01/R-CAP-02/R-CAP-04 now cover the canonical
-# application adapters plus authenticated/context-bound HTTP surface. Durable
-# command persistence/idempotency, outbox publication, the Shared/IAM
-# baobab-regulations validator workload allocation, and provider-readiness
-# promotion remain governed gates. Implementation evidence is not activation.
+# No providers[] yet. R-CAP-01/R-CAP-02/R-CAP-04/R-CAP-05 now cover the
+# canonical application adapters, authenticated/context-bound HTTP surface and
+# durable command state. Outbox publication, the Shared/IAM baobab-regulations
+# validator workload allocation, and provider-readiness promotion remain
+# governed gates. Implementation evidence is not activation.
 
 planned_capabilities:
   - capability_key: regulations.evidence.assess
@@ -54,7 +55,7 @@ planned_capabilities:
     description: >-
       Assess bounded Trade Docs documentary facts against one pinned
       Regulations requirement using the canonical RTD-06 Shared contract.
-      R-CAP-02 adapter and R-CAP-04 authenticated route implemented; no provider support is claimed yet.
+      R-CAP-02 adapter, R-CAP-04 authenticated route and R-CAP-05 durable assessment/idempotency store implemented; no provider support is claimed yet.
     provenance:
       authority:
         repository: baobab-platform/shared

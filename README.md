@@ -65,7 +65,8 @@ At present:
 - R-CAP-02 implements the provider-neutral `regulations.evidence.assess` adapter, bounded documentary sufficiency evaluation, exact decision/requirement consistency, tenant/reference integrity and an in-memory idempotency seam;
 - R-CAP-04 exposes the exact authenticated RTD-06 FastAPI routes for requirement resolution and evidence assessment, emits Shared-compatible RFC 9457 Problem Details, and validates caller-bound `context_id` through the Control Plane adapter without trusting tenant headers;
 - the route/runtime remains fail-closed until a production workload authenticator and the governed `baobab-regulations` Control Plane validator identity/`context:validate` allocation are activated outside this repository;
-- production OPA execution, durable assessment persistence/idempotency (R-CAP-05), and durable cross-engine event publication (R-CAP-06) remain outstanding;
+- R-CAP-05 persists RTD-06 evidence-assessment request/result snapshots in PostgreSQL with tenant-scoped Idempotency-Key uniqueness, request/result fingerprints, atomic concurrent replay semantics and PostgreSQL RLS bound through transaction-local trusted tenant context;
+- production OPA execution and durable cross-engine event/outbox publication (R-CAP-06) remain outstanding;
 - ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for either capability yet;
 - Foundation/application CI and release/deployment hardening are not yet complete.
 
