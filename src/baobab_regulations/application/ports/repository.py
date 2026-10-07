@@ -9,9 +9,11 @@ from baobab_regulations.domain.shared.ids import RegulatoryId
 
 
 class DecisionRepositoryPort(Protocol):
-    async def save(self, decision: RegulatoryDecision) -> None: ...
+    async def save(self, decision: RegulatoryDecision) -> None:
+        pass
 
-    async def get(self, decision_id: RegulatoryId) -> RegulatoryDecision | None: ...
+    async def get(self, decision_id: RegulatoryId) -> RegulatoryDecision | None:
+        pass
 
 
 class RuleSetRepositoryPort(Protocol):
@@ -22,8 +24,16 @@ class RuleSetRepositoryPort(Protocol):
         *,
         corridor_profile: str,
         knowledge_time: datetime,
-    ) -> str | None: ...
+    ) -> str | None:
+        pass
 
-    async def get(self, rule_set_id: str, *, tenant_id: str | None = None) -> RuleSetRecord | None: ...
+    async def get(
+        self,
+        rule_set_id: str,
+        *,
+        tenant_id: str | None = None,
+    ) -> RuleSetRecord | None:
+        pass
 
-    async def save(self, record: RuleSetRecord) -> None: ...
+    async def save(self, record: RuleSetRecord) -> None:
+        pass
