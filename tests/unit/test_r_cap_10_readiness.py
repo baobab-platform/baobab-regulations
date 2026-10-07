@@ -111,6 +111,29 @@ def test_missing_local_evidence_is_rejected(tmp_path: Path) -> None:
         evaluate_readiness(root)
 
 
+def test_local_readiness_proof_must_be_declared_as_provider_evidence(
+    tmp_path: Path,
+) -> None:
+    root = _fixture_tree(tmp_path)
+
+    def omit(doc: dict) -> None:
+        support = next(
+            item
+            for item in doc["providers"][0]["support"]
+            if item["capability_key"] == "regulations.requirement.resolve"
+        )
+        support["implementation_evidence"] = [
+            item
+            for item in support["implementation_evidence"]
+            if item["path"]
+            != "src/baobab_regulations/infrastructure/persistence/requirements_postgres.py"
+        ]
+
+    _edit(root, "capability-provider.yaml", omit)
+    with pytest.raises(ReadinessInvariantError, match="omits local proof"):
+        evaluate_readiness(root)
+
+
 def test_bad_activation_and_new_capability_claims_fail_closed(tmp_path: Path) -> None:
     root = _fixture_tree(tmp_path)
 
