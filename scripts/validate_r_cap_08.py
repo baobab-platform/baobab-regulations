@@ -42,13 +42,16 @@ def main() -> None:
     support = provider.get("support")
     if not isinstance(support, list):
         fail("provider support must be a list")
-    supported = {
-        item.get("capability_key")
+    decision_support = [
+        item
         for item in support
-        if isinstance(item, dict)
-    }
-    if DECISION_KEY in supported:
-        fail("decision.evaluate must not enter provider support during R-CAP-08")
+        if isinstance(item, dict) and item.get("capability_key") == DECISION_KEY
+    ]
+    if decision_support:
+        if len(decision_support) != 1:
+            fail("decision.evaluate must have one provider support entry")
+        if decision_support[0].get("implementation_status") != "PARTIAL":
+            fail("R-CAP-09 follow-on may promote decision.evaluate only to PARTIAL")
 
     planned = declaration.get("planned_capabilities")
     if not isinstance(planned, list):
@@ -58,15 +61,20 @@ def main() -> None:
         for item in planned
         if isinstance(item, dict) and item.get("capability_key") == DECISION_KEY
     ]
-    if len(contracted) != 1:
-        fail("decision.evaluate must appear exactly once as a canonical planned capability")
-    decision = contracted[0]
-    if decision.get("proposal_status") != "CONTRACTED":
-        fail("decision.evaluate must be CONTRACTED after Shared R-CAP-08")
-    if decision.get("target_provider_key") != "baobab-regulations.core":
-        fail("decision.evaluate target provider must remain baobab-regulations.core")
-    if "proposed_key" in decision:
-        fail("a CONTRACTED capability must not retain proposed_key")
+    if decision_support:
+        if contracted:
+            fail("R-CAP-09 provider support must remove decision.evaluate from planned_capabilities")
+        decision = decision_support[0]
+    else:
+        if len(contracted) != 1:
+            fail("decision.evaluate must remain CONTRACTED until implementation exists")
+        decision = contracted[0]
+        if decision.get("proposal_status") != "CONTRACTED":
+            fail("decision.evaluate must be CONTRACTED after Shared R-CAP-08")
+        if decision.get("target_provider_key") != "baobab-regulations.core":
+            fail("decision.evaluate target provider must remain baobab-regulations.core")
+        if "proposed_key" in decision:
+            fail("a CONTRACTED capability must not retain proposed_key")
 
     provenance = decision.get("provenance")
     if not isinstance(provenance, dict):
@@ -117,13 +125,16 @@ def main() -> None:
         if not path.is_file():
             fail(f"missing local R-CAP-08 adoption evidence: {path.relative_to(root)}")
 
-    # Contract adoption is deliberately not runtime implementation.
     routes = (root / "src/baobab_regulations/api/routes.py").read_text(encoding="utf-8")
-    for premature in ("/decisions/evaluate", "evaluateRegulatoryDecision"):
-        if premature in routes:
-            fail(
-                f"R-CAP-08 must not expose production decision route yet: found {premature}"
-            )
+    runtime_markers = ("/decisions/evaluate", "evaluateRegulatoryDecision")
+    if decision_support:
+        for marker in runtime_markers:
+            if marker not in routes:
+                fail(f"R-CAP-09 provider support requires runtime route marker {marker}")
+    else:
+        for marker in runtime_markers:
+            if marker in routes:
+                fail(f"R-CAP-08 CONTRACTED-only state must not expose {marker}")
 
     profile = load_yaml(root / ".baobab/rtd-conformance.yaml")
     shared_profile = profile.get("shared")
@@ -144,8 +155,8 @@ def main() -> None:
             fail(f"RTD-10 profile must require {path}")
 
     print(
-        "R-CAP-08 adoption passed: canonical CONTRACTED decision capability, "
-        "exact local adapters/tests, zero provider-support/runtime-route claim"
+        "R-CAP-08/R-CAP-09 maturity passed: canonical decision contract remains "
+        "governed while later PARTIAL implementation may add runtime support"
     )
 
 

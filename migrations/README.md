@@ -3,7 +3,7 @@
 PostgreSQL is the planned canonical store for regulatory state, temporal data,
 governance, and audit (ADR-REG-0006, ADR-REG-0015).
 
-## Applied (REG-2 / REG-3 / R-CAP-05 / R-CAP-06)
+## Applied (REG-2 / REG-3 / R-CAP-05 / R-CAP-06 / R-CAP-09)
 
 | File | Purpose |
 |------|---------|
@@ -11,6 +11,7 @@ governance, and audit (ADR-REG-0006, ADR-REG-0015).
 | `000002_source_registry.sql` | `authoritative_sources`, `source_artefacts`, `provenance_links`, derived-rule registrations |
 | `000003_regulatory_evidence_assessments.sql` | Durable RTD-06 assessment snapshots, tenant-scoped idempotency and PostgreSQL RLS |
 | `000004_regulatory_event_outbox.sql` | Transactional RTD-08 canonical event outbox with tenant RLS, leases, retry and dead-letter state |
+| `000005_regulatory_decision_evaluations.sql` | Canonical decision request/response snapshots, command idempotency, semantic replay identity, tenant RLS and scoped/bitemporal rule-set metadata |
 
 Apply against the compose database:
 
@@ -20,7 +21,8 @@ psql "postgres://baobab:baobab@localhost:5432/baobab_regulations" \
   -f migrations/000001_regulatory_decisions.sql \
   -f migrations/000002_source_registry.sql \
   -f migrations/000003_regulatory_evidence_assessments.sql \
-  -f migrations/000004_regulatory_event_outbox.sql
+  -f migrations/000004_regulatory_event_outbox.sql \
+  -f migrations/000005_regulatory_decision_evaluations.sql
 ```
 
 Unit tests keep in-memory adapters for deterministic isolation. R-CAP-05 adds a
@@ -37,6 +39,14 @@ event intent in the same PostgreSQL transaction as a newly committed evidence
 assessment. The relay uses tenant-scoped lease/retry state and publishes the
 complete Shared CloudEvents envelope unchanged. A live broker adapter remains a
 deployment integration concern behind the provider-neutral publisher port.
+
+R-CAP-09 persists exact Shared `regulations.decision.evaluate` request/response
+snapshots in `regulatory_decision_evaluations`. `(tenant_id,
+idempotency_key)` protects command idempotency while `(tenant_id, replay_key)`
+protects semantic replay identity. Replaying the same semantic decision under a
+new command key does not require live OPA or current rule-set resolution.
+`regulatory_rule_sets` also gains explicit platform/tenant scope with RLS and
+bitemporal validity enforcement.
 
 The other active RTD-08 event,
 `com.baobab-platform.regulations.document-requirements.determined.v1`, is not

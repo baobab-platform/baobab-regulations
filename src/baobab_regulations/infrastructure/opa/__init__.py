@@ -1,7 +1,10 @@
 """OPA HTTP / Rego adapter package.
 
-Reserved for the production policy decision path (BRIR → Rego → OPA).
-Offline deterministic evaluators live under ``infrastructure.evaluation``.
+Production R-CAP-09 evaluation uses OPA behind the provider-neutral
+RegulatoryPolicyEvaluatorPort. Canonical contracts never expose OPA topology or
+Rego package paths.
 """
 
-__all__: list[str] = []
+from baobab_regulations.infrastructure.opa.client import OpaRegulatoryPolicyEvaluator
+
+__all__ = ["OpaRegulatoryPolicyEvaluator"]

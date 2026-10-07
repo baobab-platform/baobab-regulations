@@ -1,5 +1,21 @@
 """Application services."""
 
+from baobab_regulations.application.services.decision_evaluation import (
+    DecisionEvaluationAccessDeniedError,
+    DecisionEvaluationAuthenticationError,
+    DecisionEvaluationConflictError,
+    DecisionEvaluationContextNotFoundError,
+    DecisionEvaluationIntegrityError,
+    DecisionEvaluationInvalidIdempotencyKeyError,
+    DecisionEvaluationInvalidRequestError,
+    DecisionEvaluationNotFoundError,
+    DecisionEvaluationService,
+    DecisionEvaluationUnavailableError,
+    DecisionEvaluatorNotReadyError,
+    DecisionEvaluatorProtocolError,
+    DecisionEvaluatorRuntimeError,
+    DecisionEvaluatorUndefinedError,
+)
 from baobab_regulations.application.services.evaluation import EvaluationService
 from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentAccessDeniedError,
@@ -29,6 +45,20 @@ from baobab_regulations.application.services.requirement_resolution import (
 
 __all__ = [
     "AtLeastOnceEventOutboxDispatcher",
+    "DecisionEvaluationAccessDeniedError",
+    "DecisionEvaluationAuthenticationError",
+    "DecisionEvaluationConflictError",
+    "DecisionEvaluationContextNotFoundError",
+    "DecisionEvaluationIntegrityError",
+    "DecisionEvaluationInvalidIdempotencyKeyError",
+    "DecisionEvaluationInvalidRequestError",
+    "DecisionEvaluationNotFoundError",
+    "DecisionEvaluationService",
+    "DecisionEvaluationUnavailableError",
+    "DecisionEvaluatorNotReadyError",
+    "DecisionEvaluatorProtocolError",
+    "DecisionEvaluatorRuntimeError",
+    "DecisionEvaluatorUndefinedError",
     "EvaluationService",
     "EvidenceAssessmentAccessDeniedError",
     "EvidenceAssessmentAuthenticationError",

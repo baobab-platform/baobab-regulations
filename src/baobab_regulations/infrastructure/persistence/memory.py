@@ -28,8 +28,18 @@ class InMemoryRuleSetRepository:
     async def save(self, record: RuleSetRecord) -> None:
         self._store[record.rule_set_id] = record
 
-    async def get(self, rule_set_id: str) -> RuleSetRecord | None:
-        return self._store.get(rule_set_id)
+    async def get(
+        self,
+        rule_set_id: str,
+        *,
+        tenant_id: str | None = None,
+    ) -> RuleSetRecord | None:
+        record = self._store.get(rule_set_id)
+        if record is None:
+            return None
+        if record.scope == "tenant" and record.tenant_id != tenant_id:
+            return None
+        return record
 
     async def get_active_rule_set_id(
         self,

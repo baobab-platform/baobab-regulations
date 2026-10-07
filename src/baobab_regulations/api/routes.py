@@ -13,6 +13,21 @@ from baobab_regulations.api.deps import (
 )
 from baobab_regulations.api.problems import ApiProblem, ProblemDetails
 from baobab_regulations.application.ports.events import EventPublicationMetadata
+from baobab_regulations.application.services.decision_evaluation import (
+    DecisionEvaluationAccessDeniedError,
+    DecisionEvaluationAuthenticationError,
+    DecisionEvaluationConflictError,
+    DecisionEvaluationContextNotFoundError,
+    DecisionEvaluationIntegrityError,
+    DecisionEvaluationInvalidIdempotencyKeyError,
+    DecisionEvaluationInvalidRequestError,
+    DecisionEvaluationNotFoundError,
+    DecisionEvaluationUnavailableError,
+    DecisionEvaluatorNotReadyError,
+    DecisionEvaluatorProtocolError,
+    DecisionEvaluatorRuntimeError,
+    DecisionEvaluatorUndefinedError,
+)
 from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentAccessDeniedError,
     EvidenceAssessmentAuthenticationError,
@@ -31,6 +46,10 @@ from baobab_regulations.application.services.requirement_resolution import (
     RequirementResolutionIntegrityError,
     RequirementResolutionNotFoundError,
     RequirementResolutionUnavailableError,
+)
+from baobab_regulations.contracts.decision import (
+    DecisionEvaluateRequest,
+    DecisionEvaluateResponse,
 )
 from baobab_regulations.contracts.rtd06 import (
     DocumentEvidenceAssessmentRequest,
@@ -210,6 +229,136 @@ async def assess_documentary_evidence(
             code=exc.code,
             title="Evidence assessment integrity failure",
             detail="a required authority returned an inconsistent evidence-assessment result",
+        ) from exc
+
+
+@router.post(
+    "/decisions/evaluate",
+    operation_id="evaluateRegulatoryDecision",
+    response_model=DecisionEvaluateResponse,
+    responses={
+        **_problem_responses(),
+        201: {
+            "model": DecisionEvaluateResponse,
+            "description": "New RegulatoryDecision created",
+        },
+    },
+    dependencies=[Depends(require_canonical_metadata_headers)],
+    openapi_extra={"security": [{"workloadOidc": []}]},
+)
+async def evaluate_regulatory_decision(
+    body: DecisionEvaluateRequest,
+    auth: Annotated[
+        AuthenticatedCapabilityRequest,
+        Depends(require_authenticated_capability_request),
+    ],
+    idempotency_key: Annotated[str, Depends(require_idempotency_key)],
+) -> DecisionEvaluateResponse:
+    """Evaluate one deterministic regulatory decision against an exact rule set."""
+    service = auth.runtime.decision_evaluation
+    if service is None:
+        raise ApiProblem(
+            status=503,
+            code="REGULATIONS_DECISION_RUNTIME_UNAVAILABLE",
+            title="Decision runtime unavailable",
+            detail="regulations.decision.evaluate runtime is not configured",
+            retryable=True,
+        )
+    try:
+        return await service.evaluate(
+            request=body,
+            caller=auth.caller,
+            idempotency_key=idempotency_key,
+        )
+    except DecisionEvaluationAuthenticationError as exc:
+        raise ApiProblem(
+            status=401,
+            code=exc.code,
+            title="Authentication failed",
+            detail="the caller could not be verified for the referenced context",
+        ) from exc
+    except DecisionEvaluationContextNotFoundError as exc:
+        raise ApiProblem(
+            status=404,
+            code=exc.code,
+            title="Context not found",
+            detail="the referenced context_id is unavailable to this caller",
+        ) from exc
+    except DecisionEvaluationAccessDeniedError as exc:
+        raise ApiProblem(
+            status=403,
+            code=exc.code,
+            title="Request forbidden",
+            detail="caller or nested tenant references are not authorised for this context",
+        ) from exc
+    except DecisionEvaluationNotFoundError as exc:
+        raise ApiProblem(
+            status=404,
+            code=exc.code,
+            title="Rule set not found",
+            detail="the exact pinned Regulations rule set was not found",
+        ) from exc
+    except (
+        DecisionEvaluationInvalidIdempotencyKeyError,
+        DecisionEvaluationInvalidRequestError,
+    ) as exc:
+        raise ApiProblem(
+            status=400,
+            code=exc.code,
+            title="Invalid decision request",
+            detail=str(exc),
+        ) from exc
+    except DecisionEvaluationConflictError as exc:
+        raise ApiProblem(
+            status=409,
+            code=exc.code,
+            title="Decision evaluation conflict",
+            detail=str(exc),
+        ) from exc
+    except DecisionEvaluatorUndefinedError as exc:
+        raise ApiProblem(
+            status=503,
+            code=exc.code,
+            title="Evaluator returned no decision",
+            detail="the deterministic policy query was undefined",
+        ) from exc
+    except DecisionEvaluatorProtocolError as exc:
+        raise ApiProblem(
+            status=503,
+            code=exc.code,
+            title="Evaluator protocol failure",
+            detail="the evaluator response failed the governed Regulations protocol",
+        ) from exc
+    except DecisionEvaluatorNotReadyError as exc:
+        raise ApiProblem(
+            status=503,
+            code=exc.code,
+            title="Evaluator not ready",
+            detail="the deterministic evaluator is not ready with the required policy bundle",
+            retryable=True,
+        ) from exc
+    except DecisionEvaluatorRuntimeError as exc:
+        raise ApiProblem(
+            status=503,
+            code=exc.code,
+            title="Evaluator runtime failure",
+            detail="the deterministic evaluator runtime is unavailable",
+            retryable=True,
+        ) from exc
+    except DecisionEvaluationUnavailableError as exc:
+        raise ApiProblem(
+            status=503,
+            code=exc.code,
+            title="Decision authority unavailable",
+            detail="a required decision authority is unavailable",
+            retryable=True,
+        ) from exc
+    except DecisionEvaluationIntegrityError as exc:
+        raise ApiProblem(
+            status=503,
+            code=exc.code,
+            title="Decision integrity failure",
+            detail="the decision runtime returned internally inconsistent governed state",
         ) from exc
 
 
