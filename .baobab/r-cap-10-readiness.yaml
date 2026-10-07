@@ -94,7 +94,7 @@ activation_gates:
     state: BLOCKED
     evidence: null
   engine_release_instance_health:
-    owner: infrastructure
+    owner: baobab-cp
     state: BLOCKED
     evidence: null
   capability_binding_grants_resolution:
