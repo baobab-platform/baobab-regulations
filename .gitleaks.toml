@@ -1,0 +1,17 @@
+title = "Baobab Regulations Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# R-CAP-09 uses deterministic idempotency-key strings in one unit-test module.
+# These are test fixtures, not credentials. Keep the exception narrow: both
+# the exact file path and exact fixture-line pattern must match.
+[[allowlists]]
+description = "R-CAP-09 deterministic test idempotency keys"
+condition = "AND"
+regexTarget = "line"
+paths = ['''^tests/unit/test_decision_evaluation\.py$''']
+regexes = [
+  '''IDEMPOTENCY_KEY\s*=\s*"r-cap-09-decision-0001"''',
+  '''idempotency_key\s*=\s*"r-cap-09-decision-0002"''',
+]
