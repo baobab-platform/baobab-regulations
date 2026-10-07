@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - ".baobab/capability-provider.yaml"
+      - ".baobab/repository.yaml"
       - ".github/workflows/capability-conformance.yml"
   push:
     branches: [main]
     paths:
       - ".baobab/capability-provider.yaml"
+      - ".baobab/repository.yaml"
       - ".github/workflows/capability-conformance.yml"
   workflow_dispatch:
 
@@ -16,7 +18,7 @@ permissions:
   contents: read
 
 env:
-  SHARED_REF: c2c2fdeaaaab42d666d9d0502824f65d504356a2
+  SHARED_REF: d99288e7f525d87b2d41f1d03245a65115606b8c
 
 jobs:
   capability-declaration:
@@ -50,3 +52,10 @@ jobs:
           validate-declaration .baobab/capability-provider.yaml
           --engine-id baobab-regulations
           --repository-root .
+
+      - name: Enforce repository lifecycle/provider policy
+        run: >-
+          python .shared/scripts/capability_catalogue.py
+          check-declaration-policy
+          --repository-root .
+          --mode enforce

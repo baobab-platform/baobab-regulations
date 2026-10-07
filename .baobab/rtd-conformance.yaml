@@ -7,7 +7,7 @@ repository:
   maturity: DOMAIN_RUNTIME
 shared:
   repository: baobab-platform/shared
-  commit: "c2c2fdeaaaab42d666d9d0502824f65d504356a2"
+  commit: "d99288e7f525d87b2d41f1d03245a65115606b8c"
   required_contracts:
     - contracts/capability/v1/catalogue.yaml
     - contracts/control-plane/v1/domain.schema.json
@@ -21,6 +21,7 @@ evidence:
     - docs/adr/ADR-REG-0026 — Baobab Platform Integration and Canonical Context Boundary.md
     - docs/adr/ADR-REG-0027 — Cross-Border Trade Regulatory Profile.md
     - docs/adr/ADR-REG-0031 — Regulations Capability Census, Contracted Surface and Provider-Implementation Boundary.md
+    - docs/adr/ADR-REG-0032 — First Canonical Provider Declaration, Partial Support and Activation Boundary.md
   source_paths:
     - src/baobab_regulations/domain/decisions/models.py
     - src/baobab_regulations/contracts/rtd06.py
@@ -36,7 +37,9 @@ evidence:
     - src/baobab_regulations/application/services/outbox_dispatch.py
     - src/baobab_regulations/infrastructure/persistence/event_outbox_postgres.py
     - migrations/000004_regulatory_event_outbox.sql
+    - scripts/validate_r_cap_07.py
     - .baobab/capability-provider.yaml
+    - .baobab/repository.yaml
   test_paths:
     - tests/architecture/test_dependency_boundaries.py
     - tests/unit/test_domain_aggregates.py
@@ -50,3 +53,4 @@ evidence:
     - tests/integration/test_postgres_evidence_assessment_idempotency.py
     - tests/contract/test_rtd08_requirement_satisfaction_event.py
     - tests/integration/test_postgres_event_outbox.py
+    - .github/workflows/r-cap-07-provider-readiness.yml

@@ -1,0 +1,90 @@
+name: R-CAP-07 Provider Readiness
+
+on:
+  pull_request:
+    paths:
+      - ".baobab/capability-provider.yaml"
+      - ".baobab/repository.yaml"
+      - "docs/adr/ADR-REG-0032 — First Canonical Provider Declaration, Partial Support and Activation Boundary.md"
+      - "scripts/validate_r_cap_07.py"
+      - ".github/workflows/r-cap-07-provider-readiness.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".baobab/capability-provider.yaml"
+      - ".baobab/repository.yaml"
+      - "scripts/validate_r_cap_07.py"
+      - ".github/workflows/r-cap-07-provider-readiness.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SHARED_REF: d99288e7f525d87b2d41f1d03245a65115606b8c
+
+jobs:
+  provider-readiness:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout Regulations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Checkout exact Shared capability authority
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: baobab-platform/shared
+          ref: ${{ env.SHARED_REF }}
+          path: .shared
+          token: ${{ secrets.SHARED_READ_TOKEN || github.token }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@ad3497abcd142e169a10aac37abd5175c44f33c4 # v7.0.0+6
+        with:
+          python-version: "3.14"
+
+      - name: Install Shared validation runtime
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r .shared/.github/foundation-tests/requirements.txt
+          python -m pip install --disable-pip-version-check "ruff>=0.7,<1"
+
+      - name: Lint readiness validator
+        run: ruff check scripts/validate_r_cap_07.py
+
+      - name: Validate canonical provider declaration
+        run: >-
+          python .shared/scripts/capability_catalogue.py
+          --contracts-root .shared/contracts
+          validate-declaration .baobab/capability-provider.yaml
+          --engine-id baobab-regulations
+          --repository-root .
+
+      - name: Enforce active-engine declaration policy
+        run: >-
+          python .shared/scripts/capability_catalogue.py
+          check-declaration-policy
+          --repository-root .
+          --mode enforce
+
+      - name: Enforce R-CAP-07 local readiness decision
+        run: python scripts/validate_r_cap_07.py --repository-root .
+
+      - name: Prove PARTIAL support cannot generate runtime registration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python .shared/scripts/capability_catalogue.py \
+            --contracts-root .shared/contracts \
+            generate-registration .baobab/capability-provider.yaml \
+            --provider-key baobab-regulations.core \
+            >/tmp/r-cap-07-registration.out 2>/tmp/r-cap-07-registration.err
+          then
+            cat /tmp/r-cap-07-registration.out
+            echo "PARTIAL provider unexpectedly generated runtime registration" >&2
+            exit 1
+          fi
+          grep -F "has no IMPLEMENTED support to register" /tmp/r-cap-07-registration.err
+          echo "PARTIAL provider is correctly non-registerable"

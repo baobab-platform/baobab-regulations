@@ -9,6 +9,12 @@
 **Cross-Engine Authority:** ADR-SHARED-019, ADR-SHARED-022, ADR-SHARED-026  
 **Decision Type:** Capability Census / Contract Adoption / Provider Readiness / Implementation Sequencing
 
+> **R-CAP-07 update — 2026-10-06:** The implementation sequence defined by
+> this ADR has now reached R-CAP-07. ADR-REG-0032 records the governed
+> transition of the two canonical capabilities from planned CONTRACTED state to
+> `baobab-regulations.core` PARTIAL provider support. The census conclusions
+> below remain the historical baseline at ADR-REG-0031 acceptance time.
+
 ---
 
 ## 1. Decision

@@ -3,7 +3,7 @@
 > **Headless, jurisdiction-aware regulatory intelligence and deterministic regulatory decision engine for the Baobab Platform.**
 
 **Repository:** `baobab-platform/baobab-regulations`  
-**Status:** Architecture established; domain/application scaffold active; canonical capability provider support not yet declared  
+**Status:** Architecture established; active engine implementation; first canonical provider declared with PARTIAL support only  
 **Architecture:** [`docs/adr/`](docs/adr/) — ADR-REG-0001 through ADR-REG-0031  
 **License:** Apache License 2.0
 
@@ -68,8 +68,11 @@ At present:
 - R-CAP-05 persists RTD-06 evidence-assessment request/result snapshots in PostgreSQL with tenant-scoped Idempotency-Key uniqueness, request/result fingerprints, atomic concurrent replay semantics and PostgreSQL RLS bound through transaction-local trusted tenant context;
 - R-CAP-06 commits the canonical RTD-08 `requirement-satisfaction.evaluated` CloudEvent in the same PostgreSQL transaction as a new evidence assessment, then exposes tenant-scoped lease/retry/dead-letter dispatch through a provider-neutral publisher port; delivery retries retain the original event ID;
 - `document-requirements.determined` remains intentionally unwired until an authoritative requirement-set determination write path exists; `requirement.resolve` is read-only and must not manufacture that event;
-- production OPA execution, production workload authentication/Control Plane validator activation and deployment transport wiring remain outstanding;
-- ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for either capability yet;
+- R-CAP-07 declares the first-party `baobab-regulations.core` provider with **PARTIAL** contract-major-1 support for `regulations.requirement.resolve` and `regulations.evidence.assess`; the two capabilities are no longer duplicated as planned CONTRACTED entries;
+- the Foundation repository lifecycle is now `active`, meaning Regulations is an actively implemented engine rather than an experimental architecture repository; this is not provider/runtime lifecycle and does not mean production ready;
+- Shared registration generation remains deliberately impossible because PARTIAL support is never generated into EngineRegistration;
+- production OPA execution, production workload authentication, a durable requirement-authority adapter, Shared/IAM `baobab-regulations-workload` allocation for `context:validate`, caller `baobab-regulations` audience authority, capability-resolution invocation proof and deployment event-transport wiring remain outstanding;
+- EA-09 certification, Control Plane provider registration/activation, bindings, grants and runtime resolution remain intentionally absent;
 - Foundation/application CI and release/deployment hardening are not yet complete.
 
 The architecture therefore remains ahead of the runtime in several areas. PostgreSQL, OPA, Haystack, LangGraph, Qdrant, Docling and other components should be treated as implemented only where corresponding production code and tests exist.

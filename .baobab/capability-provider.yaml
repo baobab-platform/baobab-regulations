@@ -5,7 +5,7 @@
 # Conforms to:
 #   baobab-platform/shared/contracts/capability/v1/provider-declaration.schema.json
 # Governing decisions:
-#   ADR-SHARED-017 (EA-02), ADR-REG-0002, ADR-REG-0026
+#   ADR-SHARED-017 (EA-02), ADR-SHARED-027, ADR-REG-0031, ADR-REG-0032
 #
 # Answers ONE question: which canonical Baobab domain capabilities do this
 # engine's CapabilityProviders implement, or formally plan to implement?
@@ -16,22 +16,25 @@
 #   - Control Plane owns activation, bindings, grants, health, resolution.
 #   - EA-09 owns certification (no certified field here).
 #
-# Catalogue status (2026-10-06):
-#   ADR-SHARED-027 completes the first Regulations capability census.
-#   Two narrow RTD-06 capabilities are canonical and remain DRAFT:
+# R-CAP-07 status (2026-10-06):
+#   ADR-SHARED-027 catalogues the two narrow RTD-06 capabilities:
 #     regulations.requirement.resolve
 #     regulations.evidence.assess
-#   R-CAP-01 and R-CAP-02 implement provider-neutral application adapters.
-#   R-CAP-04 adds the exact authenticated/context-bound HTTP routes and
-#   Control Plane caller-bound context-validation adapter. R-CAP-05 adds
-#   durable PostgreSQL assessment snapshots, concurrency-safe tenant-scoped
-#   idempotency and RLS. R-CAP-06 adds transactional publication intent for
-#   the canonical RTD-08 requirement-satisfaction event, tenant-scoped
-#   lease/retry/dead-letter dispatch, and Shared event-contract evidence.
-#   Validator workload activation and provider promotion remain separate gates.
-#   Both capabilities therefore remain capability_key + CONTRACTED only.
-#   The broader Regulations capabilities remain proposed_key + PROPOSED.
-#   No providers[].support entry is justified yet.
+#
+#   R-CAP-01 through R-CAP-06 now cover the exact provider-neutral adapters,
+#   authenticated/context-bound routes, Shared contract tests, durable
+#   assessment/idempotency state and the canonical requirement-satisfaction
+#   event outbox.
+#
+#   ADR-REG-0031 explicitly defines R-CAP-07 as the point at which PARTIAL
+#   provider support may be declared once all canonical contract paths are
+#   represented. That threshold is now satisfied.
+#
+#   PARTIAL is deliberate. The repository still lacks a production requirement
+#   authority adapter, a production workload-token authenticator, deployment
+#   binding for the event publisher, EA-09 certification, and the Shared/IAM
+#   baobab-regulations validator workload required for context:validate.
+#   Therefore IMPLEMENTED and runtime activation would still be overclaims.
 #
 # Validate (with a Shared checkout):
 #   python3 <shared>/scripts/capability_catalogue.py validate-declaration \
@@ -45,36 +48,89 @@ engine:
   # Repository name as engine identity (ADR-SHARED-012).
   engine_id: baobab-regulations
 
-# No providers[] yet. R-CAP-01/R-CAP-02/R-CAP-04/R-CAP-05 now cover the
-# canonical application adapters, authenticated/context-bound HTTP surface and
-# durable command state and canonical satisfaction-event outbox publication.
-# The Shared/IAM baobab-regulations validator workload allocation, deployment
-# transport wiring and provider-readiness promotion remain governed gates.
-# Implementation evidence is not activation.
+providers:
+  - provider_key: baobab-regulations.core
+    name: Baobab Regulations core provider
+    description: >-
+      First-party provider for the canonical Regulations RTD-06 capability
+      tranche. Repository implementation is partial and intentionally not
+      activation evidence. The provider is eligible to pursue production
+      certification, but is not currently certified, registered active, bound,
+      granted or runtime-resolvable through the Control Plane.
+    provider_type: BAOBAB_ENGINE
+    implementation_key: core
+    simulated: false
+    # This means the provider family may eventually be promoted to production;
+    # it does NOT mean the current PARTIAL support is production-ready or active.
+    production_permitted: true
+    provenance:
+      authority:
+        repository: baobab-platform/baobab-regulations
+        decision: ADR-REG-0032
+    support:
+      - capability_key: regulations.evidence.assess
+        contract_versions: [1]
+        implementation_status: PARTIAL
+        provenance:
+          authority:
+            repository: baobab-platform/shared
+            decision: ADR-SHARED-027
+          source_revision: d99288e7f525d87b2d41f1d03245a65115606b8c
+        implementation_evidence:
+          - type: source
+            path: src/baobab_regulations/application/services/evidence_assessment.py
+            description: Exact RTD-06 assessment orchestration, tenant/reference integrity and idempotency boundary.
+          - type: source
+            path: src/baobab_regulations/api/routes.py
+            description: Authenticated, context-bound canonical evidence-assessment HTTP operation.
+          - type: source
+            path: src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py
+            description: Durable tenant-scoped assessment and atomic event-intent commit.
+          - type: source
+            path: src/baobab_regulations/infrastructure/persistence/event_outbox_postgres.py
+            description: Tenant-scoped canonical event outbox leasing and delivery-state persistence.
+          - type: contract-test
+            path: tests/contract/test_rtd06_evidence_assessment_contract.py
+            description: Exact Shared RTD-06 request/result contract proof.
+          - type: contract-test
+            path: tests/contract/test_rtd08_requirement_satisfaction_event.py
+            description: Exact Shared RTD-08 canonical event proof.
+          - type: integration-test
+            path: tests/integration/test_postgres_evidence_assessment_idempotency.py
+            description: PostgreSQL durability, concurrency, replay and RLS proof.
+          - type: integration-test
+            path: tests/integration/test_postgres_event_outbox.py
+            description: Transactional outbox, retry, lease, redelivery and tenant-isolation proof.
+
+      - capability_key: regulations.requirement.resolve
+        contract_versions: [1]
+        implementation_status: PARTIAL
+        provenance:
+          authority:
+            repository: baobab-platform/shared
+            decision: ADR-SHARED-027
+          source_revision: d99288e7f525d87b2d41f1d03245a65115606b8c
+        implementation_evidence:
+          - type: source
+            path: src/baobab_regulations/application/services/requirement_resolution.py
+            description: Exact pinned requirement-resolution application adapter and authority guards.
+          - type: source
+            path: src/baobab_regulations/api/routes.py
+            description: Authenticated, context-bound canonical requirement-resolution HTTP operation.
+          - type: test
+            path: tests/unit/test_requirement_resolution.py
+            description: Exact pinning, stale/conflict, ownership and fail-closed behavior.
+          - type: contract-test
+            path: tests/contract/test_rtd06_requirement_resolve_contract.py
+            description: Exact Shared RTD-06 request/response contract proof.
+          - type: contract-test
+            path: tests/contract/test_rtd06_http_openapi.py
+            description: Canonical HTTP/OpenAPI route and error-surface proof.
+          - type: test
+            path: tests/unit/test_control_plane_context_authority.py
+            description: Caller-bound Control Plane context-validation behavior.
 
 planned_capabilities:
-  - capability_key: regulations.evidence.assess
-    proposal_status: CONTRACTED
-    description: >-
-      Assess bounded Trade Docs documentary facts against one pinned
-      Regulations requirement using the canonical RTD-06 Shared contract.
-      R-CAP-02 adapter, R-CAP-04 authenticated route, R-CAP-05 durable assessment/idempotency store and R-CAP-06 canonical satisfaction-event outbox implemented; no provider support is claimed yet.
-    provenance:
-      authority:
-        repository: baobab-platform/shared
-        decision: ADR-SHARED-027
-
-  - capability_key: regulations.requirement.resolve
-    proposal_status: CONTRACTED
-    description: >-
-      Resolve one exact pinned Regulations-owned documentary, permit or
-      evidence requirement projection using the canonical RTD-06 Shared
-      contract. R-CAP-01 adapter and R-CAP-04 authenticated route implemented; no provider support is claimed yet.
-    provenance:
-      authority:
-        repository: baobab-platform/shared
-        decision: ADR-SHARED-027
-
   - proposed_key: regulations.context.resolve
     proposal_status: PROPOSED
     description: >-

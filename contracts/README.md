@@ -115,12 +115,18 @@ lease-based at-least-once retry semantics. It does not emit the separate
 `document-requirements.determined` fact from the read-only requirement
 resolution capability.
 
-Live route activation remains separate from route/event implementation:
-Regulations still needs its governed workload authentication adapter and a
-registered `baobab-regulations` validator workload permitted to call Control
-Plane `context:validate` for the `baobab-regulations` audience. Deployment
+R-CAP-07 now declares `baobab-regulations.core` with PARTIAL support for both
+canonical RTD-06 capabilities. This is repository implementation evidence only:
+Shared deliberately excludes PARTIAL support from generated EngineRegistration.
+
+Live route activation remains separate from route/event implementation.
+Regulations still needs its governed workload authentication adapter, a durable
+requirement-authority adapter, and a registered `baobab-regulations-workload`
+permitted to call Control Plane `context:validate` for the
+`baobab-regulations` audience. Proving consumers must separately be authorised
+to obtain subject tokens addressed to `aud=baobab-regulations`. Deployment
 must also bind the provider-neutral event publisher port to the selected
-transport. Provider support remains undeclared until the later readiness gate.
+transport. EA-09 certification and Control Plane activation remain later gates.
 
 Domain models under `src/baobab_regulations/domain/` remain the local source of
 truth for Regulations-owned internal semantics. Do not redefine Control Plane,
