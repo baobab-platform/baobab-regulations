@@ -66,7 +66,9 @@ At present:
 - R-CAP-04 exposes the exact authenticated RTD-06 FastAPI routes for requirement resolution and evidence assessment, emits Shared-compatible RFC 9457 Problem Details, and validates caller-bound `context_id` through the Control Plane adapter without trusting tenant headers;
 - the route/runtime remains fail-closed until a production workload authenticator and the governed `baobab-regulations` Control Plane validator identity/`context:validate` allocation are activated outside this repository;
 - R-CAP-05 persists RTD-06 evidence-assessment request/result snapshots in PostgreSQL with tenant-scoped Idempotency-Key uniqueness, request/result fingerprints, atomic concurrent replay semantics and PostgreSQL RLS bound through transaction-local trusted tenant context;
-- production OPA execution and durable cross-engine event/outbox publication (R-CAP-06) remain outstanding;
+- R-CAP-06 commits the canonical RTD-08 `requirement-satisfaction.evaluated` CloudEvent in the same PostgreSQL transaction as a new evidence assessment, then exposes tenant-scoped lease/retry/dead-letter dispatch through a provider-neutral publisher port; delivery retries retain the original event ID;
+- `document-requirements.determined` remains intentionally unwired until an authoritative requirement-set determination write path exists; `requirement.resolve` is read-only and must not manufacture that event;
+- production OPA execution, production workload authentication/Control Plane validator activation and deployment transport wiring remain outstanding;
 - ADR-SHARED-027 contracts `regulations.requirement.resolve` and `regulations.evidence.assess`, but this repository intentionally declares **no provider support** for either capability yet;
 - Foundation/application CI and release/deployment hardening are not yet complete.
 

@@ -8,9 +8,11 @@ from baobab_regulations.api.deps import (
     AuthenticatedCapabilityRequest,
     require_authenticated_capability_request,
     require_canonical_metadata_headers,
+    require_event_publication_metadata,
     require_idempotency_key,
 )
 from baobab_regulations.api.problems import ApiProblem, ProblemDetails
+from baobab_regulations.application.ports.events import EventPublicationMetadata
 from baobab_regulations.application.services.evidence_assessment import (
     EvidenceAssessmentAccessDeniedError,
     EvidenceAssessmentAuthenticationError,
@@ -145,6 +147,10 @@ async def assess_documentary_evidence(
         Depends(require_authenticated_capability_request),
     ],
     idempotency_key: Annotated[str, Depends(require_idempotency_key)],
+    event_metadata: Annotated[
+        EventPublicationMetadata,
+        Depends(require_event_publication_metadata),
+    ],
 ) -> DocumentEvidenceAssessmentResult:
     """Assess bounded Trade Docs documentary facts against one exact requirement."""
     try:
@@ -152,6 +158,7 @@ async def assess_documentary_evidence(
             request=body,
             caller=auth.caller,
             idempotency_key=idempotency_key,
+            event_metadata=event_metadata,
         )
     except EvidenceAssessmentAuthenticationError as exc:
         raise ApiProblem(

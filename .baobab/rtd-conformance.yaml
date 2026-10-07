@@ -32,6 +32,10 @@ evidence:
     - src/baobab_regulations/infrastructure/control_plane/context.py
     - src/baobab_regulations/infrastructure/persistence/idempotency_postgres.py
     - migrations/000003_regulatory_evidence_assessments.sql
+    - src/baobab_regulations/contracts/events.py
+    - src/baobab_regulations/application/services/outbox_dispatch.py
+    - src/baobab_regulations/infrastructure/persistence/event_outbox_postgres.py
+    - migrations/000004_regulatory_event_outbox.sql
     - .baobab/capability-provider.yaml
   test_paths:
     - tests/architecture/test_dependency_boundaries.py
@@ -44,3 +48,5 @@ evidence:
     - tests/unit/test_control_plane_context_authority.py
     - tests/contract/test_rtd06_http_openapi.py
     - tests/integration/test_postgres_evidence_assessment_idempotency.py
+    - tests/contract/test_rtd08_requirement_satisfaction_event.py
+    - tests/integration/test_postgres_event_outbox.py

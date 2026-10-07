@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import Protocol
 
+from baobab_regulations.contracts.events import RequirementSatisfactionEvaluatedEvent
 from baobab_regulations.contracts.rtd06 import (
     DocumentEvidenceAssessmentRequest,
     DocumentEvidenceAssessmentResult,
@@ -11,9 +12,10 @@ from baobab_regulations.contracts.rtd06 import (
 
 @dataclass(frozen=True, slots=True)
 class IdempotencyReplay:
-    """Previously committed result for the same tenant/key/fingerprint."""
+    """Previously committed result/event for the same tenant/key/fingerprint."""
 
     result: DocumentEvidenceAssessmentResult
+    event: RequirementSatisfactionEvaluatedEvent
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,6 +28,7 @@ class IdempotencyCommit:
     """
 
     result: DocumentEvidenceAssessmentResult
+    event: RequirementSatisfactionEvaluatedEvent
     created: bool
 
 
@@ -60,6 +63,7 @@ class EvidenceAssessmentIdempotencyPort(Protocol):
         request_fingerprint: str,
         request: DocumentEvidenceAssessmentRequest,
         result: DocumentEvidenceAssessmentResult,
+        event: RequirementSatisfactionEvaluatedEvent,
     ) -> IdempotencyCommit: ...
 
 

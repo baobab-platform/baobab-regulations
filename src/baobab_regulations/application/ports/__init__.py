@@ -19,6 +19,7 @@ from baobab_regulations.application.ports.control_plane import (
     ValidatorTokenProviderPort,
 )
 from baobab_regulations.application.ports.evaluator import RegulatoryPolicyEvaluatorPort
+from baobab_regulations.application.ports.events import EventPublicationMetadata
 from baobab_regulations.application.ports.evidence_assessment import (
     DocumentaryEvidenceAssessorPort,
     DocumentaryEvidenceAssessorUnavailableError,
@@ -31,6 +32,13 @@ from baobab_regulations.application.ports.idempotency import (
     IdempotencyConflictError,
     IdempotencyIntegrityError,
     IdempotencyReplay,
+)
+from baobab_regulations.application.ports.outbox import (
+    CanonicalEventPublisherPort,
+    EventOutboxAuthorityUnavailableError,
+    EventOutboxIntegrityError,
+    EventOutboxRecord,
+    EventOutboxRepositoryPort,
 )
 from baobab_regulations.application.ports.repository import (
     DecisionRepositoryPort,
@@ -50,9 +58,15 @@ __all__ = [
     "ContextAuthorityPort",
     "ContextAuthorityUnavailableError",
     "ContextNotFoundError",
+    "CanonicalEventPublisherPort",
     "DecisionRepositoryPort",
     "DocumentaryEvidenceAssessorPort",
     "DocumentaryEvidenceAssessorUnavailableError",
+    "EventOutboxAuthorityUnavailableError",
+    "EventOutboxIntegrityError",
+    "EventOutboxRecord",
+    "EventOutboxRepositoryPort",
+    "EventPublicationMetadata",
     "EvidenceAssessmentIdentity",
     "EvidenceAssessmentIdempotencyPort",
     "IdempotencyAuthorityUnavailableError",

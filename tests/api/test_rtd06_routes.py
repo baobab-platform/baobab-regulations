@@ -1,5 +1,6 @@
 """R-CAP-04 authenticated/context-bound RTD-06 HTTP routes."""
 
+import asyncio
 from datetime import UTC, datetime
 from uuid import UUID
 
@@ -24,6 +25,7 @@ from baobab_regulations.application.services.requirement_resolution import (
     RequirementResolutionService,
 )
 from baobab_regulations.contracts.rtd06 import (
+    DocumentEvidenceAssessmentRequest,
     RegulatoryDecisionReference,
     RegulatoryDocumentRequirementProjection,
     RegulatoryRequirementReference,
@@ -124,7 +126,12 @@ def _projection() -> RegulatoryDocumentRequirementProjection:
     )
 
 
-def _runtime(*, context_mode: str = "allow", auth_unavailable: bool = False) -> CapabilityApiRuntime:
+def _runtime(
+    *,
+    context_mode: str = "allow",
+    auth_unavailable: bool = False,
+    idempotency: InMemoryEvidenceAssessmentIdempotency | None = None,
+) -> CapabilityApiRuntime:
     contexts = FakeContextAuthority(mode=context_mode)
     requirements = InMemoryRequirementRepository([_projection()])
     return CapabilityApiRuntime(
@@ -137,7 +144,7 @@ def _runtime(*, context_mode: str = "allow", auth_unavailable: bool = False) -> 
             contexts=contexts,
             requirements=requirements,
             assessor=ProjectionDocumentaryEvidenceAssessor(clock=lambda: EVALUATED_AT),
-            idempotency=InMemoryEvidenceAssessmentIdempotency(),
+            idempotency=idempotency or InMemoryEvidenceAssessmentIdempotency(),
         ),
     )
 
@@ -379,6 +386,40 @@ def test_evidence_route_assesses_documentary_facts() -> None:
     assert response.status_code == 200
     assert response.json()["outcome"] == "SATISFIED"
     assert response.json()["resulting_regulatory_decision_reference"] is None
+
+
+def test_evidence_route_preserves_correlation_and_trace_in_canonical_event() -> None:
+    store = InMemoryEvidenceAssessmentIdempotency()
+    client = TestClient(create_app(_runtime(idempotency=store)))
+    correlation_id = "7d7e8f9a-0b1c-4d1e-8f2a-4b5c6d7e8f11"
+    traceparent = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+    body = _evidence_body()
+
+    response = client.post(
+        "/documentary-evidence/assessments",
+        json=body,
+        headers=_headers(
+            **{
+                "Idempotency-Key": IDEMPOTENCY_KEY,
+                "X-Correlation-ID": correlation_id,
+                "traceparent": traceparent,
+            }
+        ),
+    )
+
+    assert response.status_code == 200
+    request = DocumentEvidenceAssessmentRequest.model_validate(body)
+    replay = asyncio.run(
+        store.replay(
+            tenant_id=TENANT_ID,
+            idempotency_key=IDEMPOTENCY_KEY,
+            request_fingerprint=EvidenceAssessmentService._request_fingerprint(request),
+        )
+    )
+    assert replay is not None
+    assert str(replay.event.correlationid) == correlation_id
+    assert replay.event.traceparent == traceparent
+    assert replay.event.idempotencykey == IDEMPOTENCY_KEY
 
 
 def test_evidence_route_idempotently_replays_same_result() -> None:

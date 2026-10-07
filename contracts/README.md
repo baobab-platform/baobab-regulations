@@ -107,12 +107,20 @@ committed result, and replay reads the historical snapshot rather than
 re-fetching mutable evidence. Tenant-private rows use transaction-scoped
 PostgreSQL RLS in addition to explicit tenant predicates.
 
-Live route activation remains separate from route implementation: Regulations
-still needs its governed workload authentication adapter and a registered
-`baobab-regulations` validator workload permitted to call Control Plane
-`context:validate` for the `baobab-regulations` audience. R-CAP-06 must also
-add transactional canonical event outbox publication before provider support is
-promoted.
+R-CAP-06 now persists the active Shared RTD-08
+`com.baobab-platform.regulations.requirement-satisfaction.evaluated.v1`
+envelope in the same PostgreSQL transaction as a newly committed evidence
+assessment. The tenant-scoped relay publishes the full canonical envelope with
+lease-based at-least-once retry semantics. It does not emit the separate
+`document-requirements.determined` fact from the read-only requirement
+resolution capability.
+
+Live route activation remains separate from route/event implementation:
+Regulations still needs its governed workload authentication adapter and a
+registered `baobab-regulations` validator workload permitted to call Control
+Plane `context:validate` for the `baobab-regulations` audience. Deployment
+must also bind the provider-neutral event publisher port to the selected
+transport. Provider support remains undeclared until the later readiness gate.
 
 Domain models under `src/baobab_regulations/domain/` remain the local source of
 truth for Regulations-owned internal semantics. Do not redefine Control Plane,
