@@ -4,6 +4,7 @@ from dataclasses import replace
 
 import pytest
 
+from baobab_regulations.domain.ingestion.models import RegisteredEndpoint
 from baobab_regulations.infrastructure.acquisition.https import (
     PinnedHttpsSourceFetcher,
     UnsafeDestinationError,
@@ -11,7 +12,6 @@ from baobab_regulations.infrastructure.acquisition.https import (
     validate_endpoint,
     validated_addresses,
 )
-from baobab_regulations.domain.ingestion.models import RegisteredEndpoint
 
 
 def endpoint():

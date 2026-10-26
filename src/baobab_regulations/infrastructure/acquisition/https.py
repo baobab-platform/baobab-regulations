@@ -99,7 +99,6 @@ class PinnedHttpsSourceFetcher:
         addresses = validated_addresses(await self._resolver(host))
         selected = addresses[0]
         address = f"[{selected}]" if ":" in selected else selected
-        parts = urlsplit(endpoint.uri)
         # Numeric peer ensures DNS cannot be silently re-resolved by the client.
         pinned = urlunsplit((scheme, address, path, "", ""))
         client = httpx.AsyncClient(
