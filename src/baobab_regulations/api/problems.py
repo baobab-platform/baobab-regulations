@@ -26,7 +26,7 @@ class ProblemDetails(BaseModel):
     errors: list[dict[str, Any]] | None = None
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class ApiProblem(Exception):
     status: int
     code: str
