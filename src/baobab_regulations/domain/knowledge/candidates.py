@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Literal, Self
@@ -90,7 +91,7 @@ class RegulatoryCandidate(BaseModel):
         if self.scope == "platform" and self.tenant_id is not None:
             raise ValueError("platform candidate must not carry tenant identity")
         if self.scope == "tenant" and (
-            not self.tenant_id or not self.tenant_id.startswith("tn_")
+            not self.tenant_id or re.fullmatch(r"tn_[a-z0-9]+", self.tenant_id) is None
         ):
             raise ValueError("tenant candidate requires a tenant reference")
         if self.extraction_method is ExtractionMethod.AI_ASSISTED and not (
