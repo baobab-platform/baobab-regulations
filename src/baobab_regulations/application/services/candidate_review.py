@@ -49,17 +49,21 @@ class QualifiedReviewer:
 class ReviewerAuthorityPort(Protocol):
     async def verify(
         self, *, principal_id: str, candidate: RegulatoryCandidate
-    ) -> QualifiedReviewer: ...
+    ) -> QualifiedReviewer:
+        raise NotImplementedError
 
 
 class CandidateReviewRepositoryPort(Protocol):
-    async def insert(self, candidate: RegulatoryCandidate) -> CandidateReviewRecord: ...
+    async def insert(self, candidate: RegulatoryCandidate) -> CandidateReviewRecord:
+        raise NotImplementedError
 
-    async def get(self, candidate_id: str) -> CandidateReviewRecord | None: ...
+    async def get(self, candidate_id: str) -> CandidateReviewRecord | None:
+        raise NotImplementedError
 
     async def record_decision(
         self, *, decision: CandidateReviewDecision, expected_revision: int
-    ) -> CandidateReviewRecord: ...
+    ) -> CandidateReviewRecord:
+        raise NotImplementedError
 
 
 class CandidateReviewService:
