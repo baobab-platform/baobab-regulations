@@ -197,5 +197,7 @@ def test_ai_lineage_and_tenant_scope_are_mandatory() -> None:
         make_candidate(extraction_method=ExtractionMethod.AI_ASSISTED)
     with pytest.raises(ValidationError, match="tenant reference"):
         make_candidate(tenant_id=None)
+    with pytest.raises(ValidationError, match="tenant reference"):
+        make_candidate(tenant_id="tn_UPPERCASE")
     with pytest.raises(ValidationError, match="tenant identity"):
         make_candidate(scope="platform")
