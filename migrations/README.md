@@ -3,7 +3,7 @@
 PostgreSQL is the planned canonical store for regulatory state, temporal data,
 governance, and audit (ADR-REG-0006, ADR-REG-0015).
 
-## Applied (REG-2 / REG-3 / R-CAP-05 / R-CAP-06 / R-CAP-09)
+## Applied (REG-2 / REG-3 / R-CAP-05 / R-CAP-06 / R-CAP-09 / REG-INGEST-02)
 
 | File | Purpose |
 |------|---------|
@@ -13,6 +13,7 @@ governance, and audit (ADR-REG-0006, ADR-REG-0015).
 | `000004_regulatory_event_outbox.sql` | Transactional RTD-08 canonical event outbox with tenant RLS, leases, retry and dead-letter state |
 | `000005_regulatory_decision_evaluations.sql` | Canonical decision request/response snapshots, command idempotency, semantic replay identity, tenant RLS and scoped/bitemporal rule-set metadata |
 | `000006_regulatory_requirement_projections.sql` | Immutable Regulations requirement projections, SHA-256 pin/content integrity, tenant RLS, append-only governed publishing |
+| `000007_secure_source_acquisition.sql` | Tenant-scoped rights/security event trail and immutable quarantine artefact metadata; no document bytes or regulatory promotion |
 
 Apply against the compose database:
 
@@ -24,7 +25,8 @@ psql "postgres://baobab:baobab@localhost:5432/baobab_regulations" \
   -f migrations/000003_regulatory_evidence_assessments.sql \
   -f migrations/000004_regulatory_event_outbox.sql \
   -f migrations/000005_regulatory_decision_evaluations.sql \
-  -f migrations/000006_regulatory_requirement_projections.sql
+  -f migrations/000006_regulatory_requirement_projections.sql \
+  -f migrations/000007_secure_source_acquisition.sql
 ```
 
 Unit tests keep in-memory adapters for deterministic isolation. R-CAP-05 adds a
@@ -60,3 +62,8 @@ determined the requirement set.
 
 - Instrument / provision body tables
 - Pack activation metadata
+
+REG-INGEST-02's acquisition events and artefact metadata use FORCE RLS,
+transaction-local baobab.tenant_id and INSERT/SELECT-only runtime privileges.
+Real IAM/CP, qualified scanning and durable object-store custody are needed
+before protected source acquisition may be enabled.

@@ -11,7 +11,18 @@ from baobab_regulations.infrastructure.acquisition.https import (
     validate_endpoint,
     validated_addresses,
 )
-from tests.unit.test_secure_source_acquisition import endpoint
+from baobab_regulations.domain.ingestion.models import RegisteredEndpoint
+
+
+def endpoint():
+    return RegisteredEndpoint(
+        source_id="reg_official_1", endpoint_ref="official_pdf",
+        uri="https://gazette.example.org/regulation.pdf",
+        allowed_hosts=frozenset({"gazette.example.org"}),
+        permitted_media_types=frozenset({"application/pdf"}),
+        max_bytes=1024, adapter_id="pinned-https", adapter_version="1",
+        approved=True,
+    )
 
 
 @pytest.mark.parametrize("uri", [
