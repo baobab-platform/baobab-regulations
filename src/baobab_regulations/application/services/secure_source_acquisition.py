@@ -111,17 +111,22 @@ class SecureSourceAcquisitionService:
 
             await self._record(acquisition_id, tenant, AcquisitionStatus.AUTHORIZED, {})
             fetched = await self._fetcher.fetch(endpoint)
-            await self._record(acquisition_id, tenant, AcquisitionStatus.FETCHING, {})
-            if fetched.media_type not in endpoint.permitted_media_types:
-                raise AcquisitionIntegrityError("response media type not permitted")
-            if fetched.content_length is not None and (
-                fetched.content_length < 0 or fetched.content_length > endpoint.max_bytes
-            ):
-                raise AcquisitionIntegrityError("Content-Length exceeds permitted size")
-            artefact_id = uuid4()
-            stored = await self._quarantine.store(
-                artefact_id=artefact_id, chunks=fetched.body, max_bytes=endpoint.max_bytes
-            )
+            try:
+                await self._record(acquisition_id, tenant, AcquisitionStatus.FETCHING, {})
+                if fetched.media_type not in endpoint.permitted_media_types:
+                    raise AcquisitionIntegrityError("response media type not permitted")
+                if fetched.content_length is not None and (
+                    fetched.content_length < 0 or fetched.content_length > endpoint.max_bytes
+                ):
+                    raise AcquisitionIntegrityError("Content-Length exceeds permitted size")
+                artefact_id = uuid4()
+                stored = await self._quarantine.store(
+                    artefact_id=artefact_id, chunks=fetched.body, max_bytes=endpoint.max_bytes
+                )
+            finally:
+                # Close even when MIME/size checks fail before the first read.
+                if fetched.on_close is not None:
+                    await fetched.on_close()
             if stored.size_bytes == 0:
                 raise AcquisitionIntegrityError("empty source response")
             artefact = SourceEvidenceRecord(

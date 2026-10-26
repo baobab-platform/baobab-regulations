@@ -1,6 +1,6 @@
 """REG-INGEST-02 contracts. Retrieval evidence never confers legal authority."""
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
@@ -86,6 +86,7 @@ class FetchedSource:
     content_length: int | None
     etag: str | None
     last_modified: str | None
+    on_close: Callable[[], Awaitable[None]] | None = None
 
 
 @dataclass(frozen=True, slots=True)

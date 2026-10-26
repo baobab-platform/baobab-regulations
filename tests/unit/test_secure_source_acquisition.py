@@ -350,3 +350,31 @@ def test_rights_allow_must_have_evidence():
             evidence_refs=(),
             decision_id="d",
         )
+
+
+@pytest.mark.asyncio
+async def test_rejected_media_type_closes_unconsumed_http_response():
+    closed = False
+
+    class UnexpectedMediaFetcher(FakeFetcher):
+        async def fetch(self, endpoint):
+            nonlocal closed
+            self.calls += 1
+
+            async def close() -> None:
+                nonlocal closed
+                closed = True
+
+            return FetchedSource(
+                body=stream(b"<html>untrusted</html>"),
+                media_type="text/html", content_length=22,
+                etag=None, last_modified=None, on_close=close,
+            )
+
+    fetcher = UnexpectedMediaFetcher()
+    service, journal, _, _, _, _ = await make_service(fetcher=fetcher)
+    with pytest.raises(AcquisitionIntegrityError, match="media type"):
+        await service.execute(command=command(), caller=caller())
+    assert closed
+    assert journal.events[-1].status == "FAILED"
+    assert not journal.artefacts

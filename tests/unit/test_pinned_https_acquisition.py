@@ -79,3 +79,27 @@ async def test_private_dns_answer_denied_without_constructing_http_client():
     with pytest.raises(UnsafeDestinationError, match="internal"):
         await fetcher.fetch(endpoint())
     assert calls == 1
+
+
+@pytest.mark.asyncio
+async def test_https_redirect_is_rejected_without_following_target():
+    import httpx
+
+    requests: list[str] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        requests.append(str(request.url))
+        return httpx.Response(
+            302, headers={"Location": "http://169.254.169.254/latest/meta-data"}
+        )
+
+    async def public_resolver(host: str) -> tuple[str, ...]:
+        return ("8.8.8.8",)
+
+    fetcher = PinnedHttpsSourceFetcher(
+        resolver=public_resolver, transport=httpx.MockTransport(respond)
+    )
+    with pytest.raises(UnsafeDestinationError, match="redirect"):
+        await fetcher.fetch(endpoint())
+    assert len(requests) == 1
+    assert "169.254" not in requests[0]

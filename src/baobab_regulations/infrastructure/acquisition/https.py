@@ -91,8 +91,12 @@ class PinnedHttpsSourceFetcher:
     Egress network policy remains mandatory defence-in-depth in protected runtimes.
     """
 
-    def __init__(self, resolver: Resolver = system_resolver) -> None:
+    def __init__(
+        self, resolver: Resolver = system_resolver,
+        *, transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
         self._resolver = resolver
+        self._transport = transport
 
     async def fetch(self, endpoint: RegisteredEndpoint) -> FetchedSource:
         host, path, scheme = validate_endpoint(endpoint)
@@ -106,6 +110,7 @@ class PinnedHttpsSourceFetcher:
             trust_env=False,
             follow_redirects=False,
             http2=False,
+            transport=self._transport,
         )
         try:
             request = client.build_request(
@@ -141,17 +146,21 @@ class PinnedHttpsSourceFetcher:
             await client.aclose()
             raise
 
+        async def close() -> None:
+            await response.aclose()
+            await client.aclose()
+
         async def body() -> AsyncIterator[bytes]:
             try:
                 async with asyncio.timeout(25):
                     async for chunk in response.aiter_raw(chunk_size=65536):
                         yield chunk
             finally:
-                await response.aclose()
-                await client.aclose()
+                await close()
 
         return FetchedSource(
             body=body(), media_type=media, content_length=parsed_length,
             etag=safe_http_value(response.headers.get("etag")),
-            last_modified=safe_http_value(response.headers.get("last-modified"))
+            last_modified=safe_http_value(response.headers.get("last-modified")),
+            on_close=close,
         )
