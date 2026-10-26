@@ -1,0 +1,1 @@
+"""Secure, evidence-only source acquisition (ADR-REG-0013)."""
