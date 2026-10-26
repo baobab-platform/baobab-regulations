@@ -1,0 +1,1 @@
+"""Governed transport adapters for REG-INGEST-02."""
