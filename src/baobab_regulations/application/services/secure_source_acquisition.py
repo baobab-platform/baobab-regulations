@@ -89,7 +89,7 @@ class SecureSourceAcquisitionService:
         await self._evidence.start(
             acquisition_id=acquisition_id, tenant_id=tenant,
             source_id=command.source_id, endpoint_ref=command.endpoint_ref,
-            actor_ref=caller.subject, requested_at=datetime.now(UTC).isoformat()
+            actor_ref=caller.subject, requested_at=datetime.now(UTC)
         )
         await self._record(acquisition_id, tenant, AcquisitionStatus.RIGHTS_CHECK_PENDING, {})
         try:

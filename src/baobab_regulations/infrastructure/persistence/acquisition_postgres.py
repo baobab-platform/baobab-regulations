@@ -6,6 +6,7 @@ The migration implements matching FORCE RLS on each table.
 """
 
 import json
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -24,7 +25,7 @@ class PostgresAcquisitionEvidence:
 
     async def start(
         self, *, acquisition_id: UUID, tenant_id: str, source_id: str,
-        endpoint_ref: str, actor_ref: str, requested_at: str
+        endpoint_ref: str, actor_ref: str, requested_at: datetime
     ) -> None:
         async with self._pool.acquire() as conn, conn.transaction():
             await self._tenant(conn, tenant_id)
@@ -33,7 +34,7 @@ class PostgresAcquisitionEvidence:
                 INSERT INTO reg_source_acquisitions (
                     acquisition_id, tenant_id, source_id, endpoint_ref,
                     actor_ref, requested_at
-                ) VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
+                ) VALUES ($1, $2, $3, $4, $5, $6)
                 """,
                 acquisition_id, tenant_id, source_id, endpoint_ref,
                 actor_ref, requested_at

@@ -92,7 +92,7 @@ async def test_append_only_and_cross_tenant_read_denial(live):
         acquisition_id=acquisition, tenant_id=TENANT_A,
         source_id="reg_ingest_synthetic_source",
         endpoint_ref="official", actor_ref="synthetic:issuer",
-        requested_at=datetime.now(UTC).isoformat(),
+        requested_at=datetime.now(UTC),
     )
     await journal.event(
         acquisition_id=acquisition, tenant_id=TENANT_A,
@@ -130,7 +130,7 @@ async def test_cross_tenant_insert_and_source_spoof_denied(live):
     await journal.start(
         acquisition_id=acquisition, tenant_id=TENANT_A,
         source_id="reg_ingest_synthetic_source", endpoint_ref="official",
-        actor_ref="fixture", requested_at=datetime.now(UTC).isoformat(),
+        actor_ref="fixture", requested_at=datetime.now(UTC),
     )
     with pytest.raises(asyncpg.exceptions.ForeignKeyViolationError):
         await journal.event(

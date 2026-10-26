@@ -60,10 +60,12 @@ CREATE INDEX IF NOT EXISTS idx_reg_acq_artefact_digest
 -- Runtime roles must be non-superuser, non-BYPASSRLS, and have only INSERT/SELECT.
 ALTER TABLE reg_source_acquisitions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reg_source_acquisitions FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS reg_source_acquisitions_read ON reg_source_acquisitions;
 CREATE POLICY reg_source_acquisitions_read ON reg_source_acquisitions
     FOR SELECT USING (
         tenant_id = NULLIF(current_setting('baobab.tenant_id', true), '')
     );
+DROP POLICY IF EXISTS reg_source_acquisitions_append ON reg_source_acquisitions;
 CREATE POLICY reg_source_acquisitions_append ON reg_source_acquisitions
     FOR INSERT WITH CHECK (
         tenant_id = NULLIF(current_setting('baobab.tenant_id', true), '')
@@ -71,10 +73,12 @@ CREATE POLICY reg_source_acquisitions_append ON reg_source_acquisitions
 
 ALTER TABLE reg_source_acquisition_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reg_source_acquisition_events FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS reg_source_events_read ON reg_source_acquisition_events;
 CREATE POLICY reg_source_events_read ON reg_source_acquisition_events
     FOR SELECT USING (
         tenant_id = NULLIF(current_setting('baobab.tenant_id', true), '')
     );
+DROP POLICY IF EXISTS reg_source_events_append ON reg_source_acquisition_events;
 CREATE POLICY reg_source_events_append ON reg_source_acquisition_events
     FOR INSERT WITH CHECK (
         tenant_id = NULLIF(current_setting('baobab.tenant_id', true), '')
@@ -82,10 +86,12 @@ CREATE POLICY reg_source_events_append ON reg_source_acquisition_events
 
 ALTER TABLE reg_source_acquisition_artefacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reg_source_acquisition_artefacts FORCE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS reg_source_artefacts_read ON reg_source_acquisition_artefacts;
 CREATE POLICY reg_source_artefacts_read ON reg_source_acquisition_artefacts
     FOR SELECT USING (
         tenant_id = NULLIF(current_setting('baobab.tenant_id', true), '')
     );
+DROP POLICY IF EXISTS reg_source_artefacts_append ON reg_source_acquisition_artefacts;
 CREATE POLICY reg_source_artefacts_append ON reg_source_acquisition_artefacts
     FOR INSERT WITH CHECK (
         tenant_id = NULLIF(current_setting('baobab.tenant_id', true), '')

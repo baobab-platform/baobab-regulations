@@ -1,6 +1,7 @@
 """Offline append-only acquisition journal; never a production evidence custodian."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from uuid import UUID
 
 from baobab_regulations.domain.ingestion.models import SourceEvidenceRecord
@@ -16,13 +17,13 @@ class JournalEvent:
 
 class InMemoryAcquisitionEvidence:
     def __init__(self) -> None:
-        self.starts: dict[UUID, tuple[str, str, str, str, str]] = {}
+        self.starts: dict[UUID, tuple[str, str, str, str, datetime]] = {}
         self.events: list[JournalEvent] = []
         self.artefacts: dict[UUID, SourceEvidenceRecord] = {}
 
     async def start(
         self, *, acquisition_id: UUID, tenant_id: str, source_id: str,
-        endpoint_ref: str, actor_ref: str, requested_at: str
+        endpoint_ref: str, actor_ref: str, requested_at: datetime
     ) -> None:
         if acquisition_id in self.starts:
             raise ValueError("acquisition exists")

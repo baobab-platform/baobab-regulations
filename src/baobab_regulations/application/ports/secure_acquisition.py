@@ -1,6 +1,7 @@
 """Narrow provider-neutral ports for governed regulatory retrieval."""
 
 from collections.abc import AsyncIterator
+from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
@@ -52,7 +53,7 @@ class SourceSecurityPort(Protocol):
 class AcquisitionEvidencePort(Protocol):
     async def start(
         self, *, acquisition_id: UUID, tenant_id: str, source_id: str, endpoint_ref: str,
-        actor_ref: str, requested_at: str
+        actor_ref: str, requested_at: datetime
     ) -> None: ...
 
     async def event(
