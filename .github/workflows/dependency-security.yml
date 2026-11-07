@@ -1,0 +1,33 @@
+# BA-SEC-DEP-001 source audit: native dependency checks without protected 
+# environment credentials, issuer activation, provider simulation or deployment.
+name: Native Dependency Security Maintenance
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "13 3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  python-advisories:
+    name: Daily Python dependency resolver and advisory audit — unlocked source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@06da6279cdbca41027908073e81a4544dc79c06b # pinned
+        with:
+          python-version: "3.14"
+      - name: Install project and pinned auditor in a disposable isolated venv
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv "$RUNNER_TEMP/regulations-audit"
+          "$RUNNER_TEMP/regulations-audit/bin/python" -m pip install --disable-pip-version-check -e . "pip-audit==2.10.1"
+      - name: Fail on resolved Python advisories (not a committed lock proof)
+        shell: bash
+        run: "$RUNNER_TEMP/regulations-audit/bin/pip-audit --local --strict"
